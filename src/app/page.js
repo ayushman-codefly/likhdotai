@@ -119,10 +119,8 @@ const LikhAILanding = () => {
               {features.map((feature, index) => (
                 <Card key={index} className={`border-0 shadow-lg hover:shadow-xl hover:ring-2 hover:ring-lime-300 transition-all duration-500 transform hover:-translate-y-2 hover:bg-gradient-to-br hover:from-white to-lime-50 bg-white
                 `}>
-                  <CardContent className="p-6 text-center">
-                    <feature.icon className={`w-12 h-12 mx-auto mb-4 transition-colors duration-300 ${
-                      currentFeature === index ? 'text-lime-500' : 'text-slate-400'
-                    }`} />
+                  <CardContent className="p-6 text-center hover:text-lime-400 text-lime-200">
+                    <feature.icon className={`w-12 h-12 mx-auto mb-4 transition-colors duration-300`} />
                     <h3 className="font-semibold text-slate-900 mb-2">{feature.title}</h3>
                     <p className="text-slate-600 text-sm">{feature.desc}</p>
                   </CardContent>
@@ -189,7 +187,7 @@ const LikhAILanding = () => {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Zap className="w-6 h-6 text-lime-500" />
+                  <Zap className="w-6 h-6 text-lime-400" />
                   <span>Start Smart</span>
                 </CardTitle>
               </CardHeader>
@@ -201,8 +199,7 @@ const LikhAILanding = () => {
                   "Spelling & word suggestions, real-time help"
                 ].map((item, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-lime-400 rounded-full" />
-                    <p className="text-slate-600">{item}</p>
+                    <p className="text-lime-300">{item}</p>
                   </div>
                 ))}
               </CardContent>
@@ -211,7 +208,7 @@ const LikhAILanding = () => {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Brain className="w-6 h-6 text-lime-600" />
+                  <Brain className="w-6 h-6 text-lime-400" />
                   <span>Get Smarter</span>
                 </CardTitle>
               </CardHeader>
@@ -223,8 +220,7 @@ const LikhAILanding = () => {
                   "Speeds up your work across all platforms"
                 ].map((item, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-lime-500 rounded-full" />
-                    <p className="text-slate-600">{item}</p>
+                    <p className="text-lime-300">{item}</p>
                   </div>
                 ))}
               </CardContent>
@@ -232,7 +228,7 @@ const LikhAILanding = () => {
           </div>
 
           {/* Visual Mockups */}
-          <div className="text-center mb-12">
+          {/* <div className="text-center mb-12">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">Sneak Peek</h3>
             <p className="text-slate-600 mb-8">Here's a glimpse at what it'll feel like:</p>
           </div>
@@ -252,7 +248,7 @@ const LikhAILanding = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -277,7 +273,7 @@ const LikhAILanding = () => {
                 <CardContent className="p-6">
                   <benefit.icon className="w-12 h-12 text-lime-500 mx-auto mb-4" />
                   <h3 className="font-semibold text-slate-100 mb-2">{benefit.title}</h3>
-                  <p className="text-lime-700 text-sm">{benefit.desc}</p>
+                  <p className="text-lime-300 text-sm">{benefit.desc}</p>
                 </CardContent>
               </Card>
             ))}
