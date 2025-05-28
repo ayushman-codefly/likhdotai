@@ -81,7 +81,7 @@ const LikhAILanding = () => {
           <div className="text-center">
             <Badge className="mb-6 bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
               <Sparkles className="w-4 h-4 mr-1" />
-              Get 6 Months FREE – then just ₹5000/year
+              Get 3 Months FREE – then just ₹5000/year
             </Badge>
             
             <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-bold mb-6 transition-all duration-1000 transform ${
@@ -108,7 +108,7 @@ const LikhAILanding = () => {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
             }`}>
               <Button size="lg" className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group">
-                Join Free for 1 Year
+                Join Free for 3 months
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <p className="text-sm text-slate-500">No payment. No pressure. Just pure typing magic.</p>
@@ -264,7 +264,7 @@ const LikhAILanding = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Star, title: "First 6 Months Free", desc: "Limited time offer for all early users" },
+              { icon: Star, title: "First 3 Months Free", desc: "Limited time offer for all early users" },
               { icon: Users, title: "Partner Discounts", desc: "Special rates for DTP teams, publishers & media houses" },
               { icon: Globe, title: "Influence Our Roadmap", desc: "Your feedback matters — help us build what you need" },
               { icon: CheckCircle, title: "Lock in Early Pricing", desc: "₹5000/year regular pricing after free period" }
@@ -336,7 +336,7 @@ const LikhAILanding = () => {
             Join the early access list — and be part of the writing revolution.
           </p>
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-8">
-            <p className="text-2xl font-bold mb-2">6 months free</p>
+            <p className="text-2xl font-bold mb-2">3 months free</p>
             <p className="opacity-90">then just ₹5000/year per license</p>
           </div>
           <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 text-lg rounded-full shadow-lg" onClick={() => router.push("/signup")}>
