@@ -215,7 +215,7 @@ const CareersPage = () => {
             </section>
 
             {/* Meet the Team */}
-            <section className="py-20 bg-gradient-to-br from-lime-150 to-lime-200">
+            {/* <section className="py-20 bg-gradient-to-br from-lime-150 to-lime-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <Badge className="mb-4 bg-lime-200 text-lime-800 border-lime-300">The Founding Team</Badge>
@@ -229,9 +229,9 @@ const CareersPage = () => {
 
                     <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                         {[
-                            { name: "Janajit Bagchi", role: "Co-founder & CEO", initials: "JB", bio: "Visionary leader with deep understanding of Indian language markets" },
-                            { name: "Anurag Behera", role: "Co-founder & CPO", initials: "AB", bio: "Product strategist focused on user-centered design and experience" },
-                            { name: "Ayushman Manishankar", role: "Co-founder & CTO", initials: "AM", bio: "Technical architect building scalable AI-powered solutions" }
+                            { name: "AGENT1", role: "Co-founder & CEO", initials: "JB", bio: "Visionary leader with deep understanding of Indian language markets" },
+                            { name: "", role: "Co-founder & CPO", initials: "AB", bio: "Product strategist focused on user-centered design and experience" },
+                            { name: "", role: "Co-founder & CTO", initials: "AM", bio: "Technical architect building scalable AI-powered solutions" }
                         ].map((member, index) => (
                             <Card key={index} className="border-0 shadow-lg text-center bg-gradient-to-r from-lime-50 to-lime-100">
                                 <CardContent className="p-6">
@@ -248,7 +248,7 @@ const CareersPage = () => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Future Roles */}
             <section id="future-roles" className="py-20 bg-white">

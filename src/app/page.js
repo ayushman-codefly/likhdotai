@@ -291,7 +291,7 @@ const LikhAILanding = () => {
       </section>
 
       {/* Team Section */}
-      <section id="team" className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* <section id="team" className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-blue-100 text-blue-800">Meet the Team</Badge>
@@ -305,9 +305,9 @@ const LikhAILanding = () => {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { name: "Janajit Bagchi", role: "Co-founder & CEO", initials: "JB" },
-              { name: "Anurag Behera", role: "Co-founder & CPO", initials: "AB" },
-              { name: "Ayushman Manishankar", role: "Co-founder & CTO", initials: "AM" }
+              { name: "", role: "Co-founder & CEO", initials: "JB" },
+              { name: "", role: "Co-founder & CPO", initials: "AB" },
+              { name: "", role: "Co-founder & CTO", initials: "AM" }
             ].map((member, index) => (
               <Card key={index} className="border-0 shadow-lg text-center">
                 <CardContent className="p-6 flex flex-col justify-between items-center">
@@ -323,7 +323,7 @@ const LikhAILanding = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 text-white">
