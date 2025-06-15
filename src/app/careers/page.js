@@ -262,24 +262,22 @@ const CareersPage = () => {
                             As we grow, we'll be looking for talented individuals across multiple disciplines
                         </p>
                     </div>
-
-                    <div className="w-max grid gap-12">
-                        {futureRoles.map((category, index) => (
-                            <Accordion key={index} type="single" collapsible className="w-full">
-                                <AccordionItem value={`${category.category}`}>
-                                    <AccordionTrigger>
-                                        <div className='text-slate-900 font-bold text-xl flex flex-row gap-6 justify-around items-center'>
-                                            <category.icon className="w-10 h-10 text-lime-500 mx-0 mb-2" />
-                                            {category.category}
-                                        </div>
-                                    </AccordionTrigger>
-                                    {category.roles.map((role, roleIndex) => (
-                                        <AccordionContent className="text-slate-900 text-lg" key={roleIndex}>
-                                            {role}
-                                        </AccordionContent>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {futureRoles.map((value, index) => (
+                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-r from-lime-50 to-lime-100">
+                                <CardHeader className="py-0">
+                                    <div className="flex flex-row items-center gap-4">
+                                        <value.icon className="w-12 h-12 text-lime-500 mb-4" />
+                                        <h3 className="text-xl font-bold text-slate-900 mb-3">{value.category}</h3>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="px-8">
+                                    {value.roles.map((role, roleIndex) => (
+                                        <p key={roleIndex} className="text-slate-600">{role}</p>
                                     ))}
-                                </AccordionItem>
-                            </Accordion>
+
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                 </div>

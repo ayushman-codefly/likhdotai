@@ -23,10 +23,13 @@ import {
   Mail
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import useSession from '@/lib/supabase/use-session';
 
 const LikhAILanding = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentFeature, setCurrentFeature] = useState(0);
+
+  const user = useSession()?.user;
 
   const router = useRouter();
   useEffect(() => {
@@ -66,8 +69,8 @@ const LikhAILanding = () => {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">Features</a>
               <a href="#team" className="text-slate-600 hover:text-slate-900 transition-colors">Team</a>
-              <Button className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700" onClick={() => router.push("/signup")}>
-                Join Free
+              <Button className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700" onClick={() => router.push(user?"/dashboard":"/signup")}>
+                {user?"Dashboard":"Join Free"}
               </Button>
             </div>
           </div>
@@ -108,7 +111,7 @@ const LikhAILanding = () => {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
             }`}>
               <Button size="lg" className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group">
-                Join Free for 3 months
+              {user?"Dashboard":"Join Free for 3 months"}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <p className="text-sm text-slate-500">No payment. No pressure. Just pure typing magic.</p>
@@ -284,7 +287,7 @@ const LikhAILanding = () => {
               "If you've ever used ShreeLipi, you'll love this upgrade."
             </p>
             <Button size="lg" className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full">
-              Join the Movement
+            {user?"Dashboard":"Join the Movement"}
             </Button>
           </div>
         </div>
@@ -339,7 +342,7 @@ const LikhAILanding = () => {
             <p className="text-2xl font-bold mb-2">3 months free</p>
             <p className="opacity-90">then just ₹5000/year per license</p>
           </div>
-          <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 text-lg rounded-full shadow-lg" onClick={() => router.push("/signup")}>
+          <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 text-lg rounded-full shadow-lg" onClick={() => router.push(user?"/dashboard":"/signup")}>
             <Mail className="w-5 h-5 mr-2" />
             Sign Up Now
           </Button>
