@@ -8,7 +8,7 @@ export default function SignupPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         {/* Header with Likh.AI branding */}
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
+          <a href="/" className="flex items-center gap-2 font-medium">
             <div className="bg-gradient-to-r from-lime-500 to-lime-600 text-white flex size-8 items-center justify-center rounded-lg">
               <Type className="size-4" />
             </div>
