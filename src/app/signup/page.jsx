@@ -62,20 +62,6 @@ export default function SignupPage() {
                 suggestions and seamless language support.
               </p>
             </div>
-            <div className="flex items-center justify-center space-x-8 pt-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold">10+</div>
-                <div className="text-lime-200 text-sm">Languages</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">50K+</div>
-                <div className="text-lime-200 text-sm">Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">99%</div>
-                <div className="text-lime-200 text-sm">Accuracy</div>
-              </div>
-            </div>
           </div>
         </div>
 

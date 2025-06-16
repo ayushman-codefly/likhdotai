@@ -58,20 +58,6 @@ export default function LoginPage() {
                 in Indian languages.
               </p>
             </div>
-            <div className="flex items-center justify-center space-x-8 pt-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold">Fast</div>
-                <div className="text-lime-200 text-sm">Login</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">Secure</div>
-                <div className="text-lime-200 text-sm">Access</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">Smart</div>
-                <div className="text-lime-200 text-sm">AI</div>
-              </div>
-            </div>
           </div>
         </div>
 
