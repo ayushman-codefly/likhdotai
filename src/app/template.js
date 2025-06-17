@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun } from "lucide-react"
+import { Heart, Moon, Sun, Type } from "lucide-react"
 import { useTheme } from "next-themes"
 import {
   DropdownMenu,
@@ -45,6 +45,31 @@ export default function Template({ children }) {
             {/* <ModeToggle /> */}
         </div>
       {children}
+      {/* Footer */}
+      <footer className="bg-slate-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-pink-600 rounded-lg flex items-center justify-center">
+                <Type className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-bold">Likh.AI</span>
+            </div>
+            <div className="flex space-x-6 mb-4 md:mb-0">
+              <a href="/" className="text-slate-400 hover:text-white transition-colors">Home</a>
+              <a href="/contact" className="text-slate-400 hover:text-white transition-colors">Contact</a>
+              <a href="/careers" className="text-slate-400 hover:text-white transition-colors">Careers</a>
+              <a href="/privacy" className="text-slate-400 hover:text-white transition-colors">Privacy</a>
+              <a href="/eula" className="text-slate-400 hover:text-white transition-colors">Terms and Conditions</a>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-400">
+              <p>© 2025 Likh.AI — Made with</p>
+              <Heart className="w-4 h-4 text-red-500" />
+              <p>for Indian languages</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

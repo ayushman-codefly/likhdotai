@@ -133,9 +133,7 @@ const CareersPage = () => {
                         <div className="hidden md:flex items-center space-x-8">
                             <a href="#values" className="text-slate-600 hover:text-slate-900 transition-colors">Culture</a>
                             <a href="#future-roles" className="text-slate-600 hover:text-slate-900 transition-colors">Future Roles</a>
-                            <Button className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700">
-                                Get Notified
-                            </Button>
+                            
                         </div>
                     </div>
                 </div>
@@ -366,27 +364,6 @@ const CareersPage = () => {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="bg-slate-900 text-white py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                            <span className="text-xl font-bold">Likh.AI</span>
-                        </div>
-                        <div className="flex space-x-6 mb-4 md:mb-0">
-                            <a href="/about" className="text-slate-400 hover:text-white transition-colors">About</a>
-                            <a href="/contact" className="text-slate-400 hover:text-white transition-colors">Contact</a>
-                            <a href="/privacy" className="text-slate-400 hover:text-white transition-colors">Privacy</a>
-                            <a href="/" className="text-slate-400 hover:text-white transition-colors">Home</a>
-                        </div>
-                        <div className="flex items-center space-x-2 text-slate-400">
-                            <p>© 2025 Likh.AI — Made with</p>
-                            <Heart className="w-4 h-4 text-red-500" />
-                            <p>for Indian languages</p>
-                        </div>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 };

@@ -2,6 +2,7 @@ import { Type, Sparkles } from "lucide-react"
 import { LoginForm } from "@/components/login-form"
 import { Badge } from "@/components/ui/badge"
 
+
 export default function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2 bg-gradient-to-br from-lime-50 via-white to-lime-100">

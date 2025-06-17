@@ -39,7 +39,7 @@ export default function OnboardingPage({ userId, email }) {
   // Generate avatar URLs from toon_1.png to toon_10.png
   const avatarOptions = Array.from(
     { length: 10 },
-    (_, i) => `https://cdn.jsdelivr.net/gh/alohe/avatars/png/toon_${i + 1}.png`,
+    (_, i) => `https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_${i + 1}.png`,
   )
 
   const useCases = [
