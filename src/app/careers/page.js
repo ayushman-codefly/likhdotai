@@ -133,9 +133,7 @@ const CareersPage = () => {
                         <div className="hidden md:flex items-center space-x-8">
                             <a href="#values" className="text-slate-600 hover:text-slate-900 transition-colors">Culture</a>
                             <a href="#future-roles" className="text-slate-600 hover:text-slate-900 transition-colors">Future Roles</a>
-                            <Button className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700">
-                                Get Notified
-                            </Button>
+                            
                         </div>
                     </div>
                 </div>
@@ -262,24 +260,22 @@ const CareersPage = () => {
                             As we grow, we'll be looking for talented individuals across multiple disciplines
                         </p>
                     </div>
-
-                    <div className="w-max grid gap-12">
-                        {futureRoles.map((category, index) => (
-                            <Accordion key={index} type="single" collapsible className="w-full">
-                                <AccordionItem value={`${category.category}`}>
-                                    <AccordionTrigger>
-                                        <div className='text-slate-900 font-bold text-xl flex flex-row gap-6 justify-around items-center'>
-                                            <category.icon className="w-10 h-10 text-lime-500 mx-0 mb-2" />
-                                            {category.category}
-                                        </div>
-                                    </AccordionTrigger>
-                                    {category.roles.map((role, roleIndex) => (
-                                        <AccordionContent className="text-slate-900 text-lg" key={roleIndex}>
-                                            {role}
-                                        </AccordionContent>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {futureRoles.map((value, index) => (
+                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-r from-lime-50 to-lime-100">
+                                <CardHeader className="py-0">
+                                    <div className="flex flex-row items-center gap-4">
+                                        <value.icon className="w-12 h-12 text-lime-500 mb-4" />
+                                        <h3 className="text-xl font-bold text-slate-900 mb-3">{value.category}</h3>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="px-8">
+                                    {value.roles.map((role, roleIndex) => (
+                                        <p key={roleIndex} className="text-slate-600">{role}</p>
                                     ))}
-                                </AccordionItem>
-                            </Accordion>
+
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                 </div>
@@ -368,27 +364,6 @@ const CareersPage = () => {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="bg-slate-900 text-white py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                            <span className="text-xl font-bold">Likh.AI</span>
-                        </div>
-                        <div className="flex space-x-6 mb-4 md:mb-0">
-                            <a href="/about" className="text-slate-400 hover:text-white transition-colors">About</a>
-                            <a href="/contact" className="text-slate-400 hover:text-white transition-colors">Contact</a>
-                            <a href="/privacy" className="text-slate-400 hover:text-white transition-colors">Privacy</a>
-                            <a href="/" className="text-slate-400 hover:text-white transition-colors">Home</a>
-                        </div>
-                        <div className="flex items-center space-x-2 text-slate-400">
-                            <p>© 2025 Likh.AI — Made with</p>
-                            <Heart className="w-4 h-4 text-red-500" />
-                            <p>for Indian languages</p>
-                        </div>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 };
