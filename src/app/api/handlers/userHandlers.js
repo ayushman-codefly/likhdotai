@@ -1,16 +1,29 @@
 "use server"
 
 import sql from "@/db";
+import { decrypt, encrypt } from "@/lib/utils";
 
-export async function getUserFromDB(email){
-    try{
-        const user = await sql`
-            select *
-            from next_auth.users
-            where email = ${ email }
-        `
+export async function getUserFromDB(id){
+    try{        
+        const user = await sql
+        .from('users')
+        .select('*')
+        .eq('uuid', id)
+        if(user.data.length === 0){
+            return {
+                dbUser: null,
+                error: null
+            };
+        }
+        let decryptedEmail = decrypt(user.data[0].email);
+        let decryptedFullName = decrypt(user.data[0].fullname);
+        let decryptedUser = {
+            ...user.data[0],
+            email: decryptedEmail,
+            fullname: decryptedFullName,
+        }
         return {
-            dbUser:user,
+            dbUser:decryptedUser,
             error:null
         };
     }
@@ -23,17 +36,11 @@ export async function getUserFromDB(email){
     }
 }
 
-export async function setUserInDB({email, id, image, name, onboarded,usecase}){
+export async function setUserInDB({email, id:uuid, image, fullname,usecase}){
     try{
-        const user = await sql`
-            INSERT INTO next_auth.users (id, name, email, image, onboarded, usecase)
-            VALUES (${id}, ${name}, ${email}, ${image}, ${onboarded}, ${usecase})
-            ON CONFLICT (email) 
-            DO UPDATE SET 
-                name = EXCLUDED.name,
-                image = EXCLUDED.image
-            RETURNING *
-        `
+        email = encrypt(email);
+        fullname = encrypt(fullname);
+        const user = await sql.from("users").insert({email,uuid,usecase,fullname,image})
         return {
             dbUser: user,
             error: null

@@ -109,16 +109,16 @@ const LikhAILanding = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-white to-lime-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-lime-200">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              {/* <div className="w-8 h-8 bg-gradient-to-r from-lime-500 to-lime-600 rounded-lg flex items-center justify-center">
+              {/* <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Type className="w-4 h-4 text-white" />
               </div> */}
-              <span className="text-xl font-bold bg-gradient-to-r from-lime-600 to-lime-700 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
                 Likh.AI
               </span>
             </div>
@@ -130,7 +130,7 @@ const LikhAILanding = () => {
                 Team
               </a>
               <Button
-                className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700"
+                className="bg-gradient-to-r text-slate-100 from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                 onClick={() => router.push(user ? "/dashboard" : "/signup")}
               >
                 {user ? "Dashboard" : "Join Free"}
@@ -142,10 +142,10 @@ const LikhAILanding = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32">
-        <div className="absolute inset-0 bg-gradient-to-r from-lime-50 to-lime-100 opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-blue-100 opacity-50" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Badge className="mb-6 bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
+            <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
               <Sparkles className="w-4 h-4 mr-1" />
               Get 3 Months FREE – then just ₹5000/year
             </Badge>
@@ -159,7 +159,7 @@ const LikhAILanding = () => {
                 Likho with
               </span>
               <br />
-              <span className="bg-gradient-to-r from-lime-500 via-lime-600 to-lime-700 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 bg-clip-text text-transparent">
                 Likh.AI
               </span>
             </h1>
@@ -170,7 +170,7 @@ const LikhAILanding = () => {
               }`}
             >
               Your always-on Indian language typing assistant. Type effortlessly in
-              <span className="text-lime-600 font-semibold"> Hindi, Bangla, Odia & more</span> — with voice typing,
+              <span className="text-blue-600 font-semibold"> Hindi, Bangla, Odia & more</span> — with voice typing,
               smart suggestions, and instant grammar help.
             </p>
 
@@ -180,8 +180,9 @@ const LikhAILanding = () => {
               }`}
             >
               <Button
+                onClick={()=>user?router.push('/dashboard'):router.push('/signup')}
                 size="lg"
-                className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
               >
                 {user ? "Dashboard" : "Join Free for 3 months"}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -194,10 +195,10 @@ const LikhAILanding = () => {
               {features.map((feature, index) => (
                 <Card
                   key={index}
-                  className="border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl"
+                  className="border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl"
                 >
                   <CardContent className="p-8 text-center">
-                    <feature.icon className="w-24 h-24 mx-auto mb-4 text-lime-600" />
+                    <feature.icon className="w-24 h-24 mx-auto mb-4 text-blue-600" />
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">{feature.title}</h3>
                     <p className="text-slate-600">{feature.desc}</p>
                   </CardContent>
@@ -238,9 +239,9 @@ const LikhAILanding = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl p-8 h-96 flex items-center justify-center">
+              <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl p-8 h-96 flex items-center justify-center">
                 <div className="text-center">
-                  <Languages className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+                  <Languages className="w-24 h-24 text-blue-600 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">Made for India</h3>
                   <p className="text-slate-600">Proudly built for Indian language professionals</p>
                 </div>
@@ -251,17 +252,17 @@ const LikhAILanding = () => {
       </section>
 
       {/* Features Preview */}
-      <section id="features" className="py-20 bg-gradient-to-br from-lime-50 to-lime-100">
+      <section id="features" className="py-20 bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-lime-100 text-lime-800 border-lime-300">What We're Building</Badge>
+            <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">What We're Building</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">Features that make typing effortless</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
               <CardContent className="p-8 text-center">
-                <Zap className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+                <Zap className="w-14 h-14 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-slate-900 mb-4">Start Smart</h3>
                 <div className="space-y-3 text-left">
                   {[
@@ -271,7 +272,7 @@ const LikhAILanding = () => {
                     "Spelling & word suggestions, real-time help",
                   ].map((item, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-lime-600 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
                       <p className="text-slate-600">{item}</p>
                     </div>
                   ))}
@@ -279,9 +280,9 @@ const LikhAILanding = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
               <CardContent className="p-8 text-center">
-                <Brain className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+                <Brain className="w-14 h-14 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-slate-900 mb-4">Get Smarter</h3>
                 <div className="space-y-3 text-left">
                   {[
@@ -291,7 +292,7 @@ const LikhAILanding = () => {
                     "Speeds up your work across all platforms",
                   ].map((item, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-lime-600 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
                       <p className="text-slate-600">{item}</p>
                     </div>
                   ))}
@@ -329,7 +330,7 @@ const LikhAILanding = () => {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-lime-100 text-lime-800 border-lime-300">Who We Serve</Badge>
+            <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">Who We Serve</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
               Perfect for every Indian language professional
             </h2>
@@ -343,10 +344,10 @@ const LikhAILanding = () => {
             {useCases.map((useCase, index) => (
               <Card
                 key={useCase.id}
-                className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl group"
+                className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl group"
               >
                 <CardContent className="p-8 text-center">
-                  <useCase.icon className="w-16 h-16 text-lime-600 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  <useCase.icon className="w-12 h-12 text-blue-600 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
                   <h3 className="text-lg font-bold text-slate-900 mb-2">{useCase.title}</h3>
                   <p className="text-slate-600 text-sm">{useCase.description}</p>
                 </CardContent>
@@ -367,7 +368,7 @@ const LikhAILanding = () => {
       <section className="pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-green-100 text-green-800">Limited Time Offer</Badge>
+            <Badge className="mb-4 bg-blue-100 text-blue-800">Limited Time Offer</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">Why You Should Sign Up Today</h2>
           </div>
 
@@ -392,11 +393,11 @@ const LikhAILanding = () => {
             ].map((benefit, index) => (
               <Card
                 key={index}
-                className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl"
+                className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl"
               >
                 <CardContent className="p-8 text-center">
-                  <benefit.icon className="w-24 h-24 text-lime-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">{benefit.title}</h3>
+                  <benefit.icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{benefit.title}</h3>
                   <p className="text-slate-600">{benefit.desc}</p>
                 </CardContent>
               </Card>
@@ -406,10 +407,10 @@ const LikhAILanding = () => {
       </section>
 
       {/* Team Section */}
-      <section id="team" className="py-20 bg-gradient-to-br from-lime-50 to-lime-100">
+      <section id="team" className="py-20 bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-lime-100 text-lime-800 border-lime-300">Meet the Founder</Badge>
+            <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">Meet the Founder</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">The visionary behind Likh.AI</h2>
             <p className="text-lg text-slate-600">
               Building for the people who power India's language industries — one keystroke at a time.
@@ -417,14 +418,14 @@ const LikhAILanding = () => {
           </div>
 
           <div className="max-w-md mx-auto">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
               <CardContent className="p-8 text-center">
-                <Avatar className="w-32 h-32 mx-auto mb-6 bg-gradient-to-r from-lime-500 to-lime-600">
+                <Avatar className="w-32 h-32 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-blue-600">
                 <AvatarImage src="./janajit.png" alt={"JB"} />
                   <AvatarFallback className="text-white text-3xl font-bold">JB</AvatarFallback>
                 </Avatar>
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">Janajit Bagchi</h3>
-                <p className="text-lime-600 font-semibold mb-4">CEO & Founder</p>
+                <p className="text-blue-600 font-semibold mb-4">CEO & Founder</p>
                 <p className="text-slate-600">
                   Passionate about empowering Indian language professionals with cutting-edge AI technology that
                   understands our unique linguistic needs.
@@ -449,30 +450,30 @@ const LikhAILanding = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
               <CardContent className="p-8 text-center">
-                <Mail className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+                <Mail className="w-14 h-14 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">Email Us</h3>
                 <p className="text-slate-600 mb-4">For general inquiries and support</p>
                 <a
                   href="mailto:contact@likh.ai"
-                  className="text-lime-600 font-semibold hover:text-lime-700 transition-colors text-lg"
+                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors text-lg"
                 >
                   contact@likh.ai
                 </a>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
               <CardContent className="p-8 text-center">
-                <Phone className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+                <Phone className="w-14 h-14 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">WhatsApp</h3>
                 <p className="text-slate-600 mb-4">Quick questions and instant support</p>
                 <a
                   href="https://wa.me/919933972298"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-lime-600 font-semibold hover:text-lime-700 transition-colors text-lg"
+                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors text-lg"
                 >
                   +91 99339 72298
                 </a>
@@ -481,14 +482,14 @@ const LikhAILanding = () => {
           </div>
 
           <div className="text-center mt-12">
-            <div className="bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl p-8 max-w-2xl mx-auto">
+            <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl p-8 max-w-2xl mx-auto">
               <h3 className="text-xl font-bold text-slate-900 mb-4">Enterprise Solutions</h3>
               <p className="text-slate-600 mb-6">
                 Looking for custom integrations, bulk licenses, or specialized features for your organization? Let's
                 discuss how Likh.AI can be tailored to your specific needs.
               </p>
               <Button
-                className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-6 py-3 rounded-full"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-full"
                 onClick={() => window.open("mailto:contact@likh.ai?subject=Enterprise Solutions Inquiry", "_blank")}
               >
                 Contact for Enterprise

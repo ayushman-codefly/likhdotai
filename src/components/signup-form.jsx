@@ -69,8 +69,6 @@ export function SignupForm({ className, ...props }) {
         },
       })
 
-      console.log({ data, error })
-
       if (error) {
         setError(error.message)
       } else if (data) {
@@ -108,7 +106,7 @@ export function SignupForm({ className, ...props }) {
   return (
     <Card className={cn("w-full border-0 shadow-lg bg-white", className)} {...props}>
       <CardHeader className="text-center pb-4">
-        <div className="w-12 h-12 bg-gradient-to-r from-lime-500 to-lime-600 rounded-full flex items-center justify-center mx-auto mb-3">
+        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
           <UserPlus className="h-6 w-6 text-white" />
         </div>
         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -141,7 +139,7 @@ export function SignupForm({ className, ...props }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="border-slate-200 focus:border-lime-400 focus:ring-lime-400 h-10 text-lg text-black"
+              className="border-slate-200 focus:border-blue-400 focus:ring-blue-400 h-10 text-lg text-black"
             />
           </div>
 
@@ -159,7 +157,7 @@ export function SignupForm({ className, ...props }) {
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
                 required
-                className="border-slate-200 focus:border-lime-400 focus:ring-lime-400 h-10 text-lg pr-12 text-black"
+                className="border-slate-200 focus:border-blue-400 focus:ring-blue-400 h-10 text-lg pr-12 text-black"
               />
               <button
                 type="button"
@@ -185,7 +183,7 @@ export function SignupForm({ className, ...props }) {
                 value={cpass}
                 onChange={(e) => setCpass(e.target.value)}
                 required
-                className="border-slate-200 focus:border-lime-400 focus:ring-lime-400 h-10 text-lg pr-12 text-black"
+                className="border-slate-200 focus:border-blue-400 focus:ring-blue-400 h-10 text-lg pr-12 text-black"
               />
               <button
                 type="button"
@@ -213,7 +211,7 @@ export function SignupForm({ className, ...props }) {
           <Button
             type="submit"
             size="lg"
-            className="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-6 py-3 text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -237,7 +235,7 @@ export function SignupForm({ className, ...props }) {
               type="button"
               variant="outline"
               size="lg"
-              className="border-slate-200 hover:bg-slate-50 hover:border-lime-300 py-3 rounded-full transition-all duration-300"
+              className="border-slate-200 hover:bg-slate-50 hover:border-blue-300 py-3 rounded-full transition-all duration-300"
               onClick={handleGoogleLogin}
               disabled={isLoading}
             >
@@ -253,7 +251,7 @@ export function SignupForm({ className, ...props }) {
               type="button"
               variant="outline"
               size="lg"
-              className="border-slate-200 hover:bg-slate-50 hover:border-lime-300 py-3 rounded-full transition-all duration-300"
+              className="border-slate-200 hover:bg-slate-50 hover:border-blue-300 py-3 rounded-full transition-all duration-300"
               onClick={handleFacebookLogin}
               disabled={isLoading}
             >
@@ -272,7 +270,7 @@ export function SignupForm({ className, ...props }) {
             Already have an account?{" "}
             <a
               href="/login"
-              className="text-lime-600 hover:text-lime-700 font-medium underline underline-offset-4 transition-colors"
+              className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-4 transition-colors"
             >
               Sign in
             </a>

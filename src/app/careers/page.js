@@ -111,11 +111,11 @@ const CareersPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-lime-50 via-white to-lime-100">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
             {/* Navigation */}
 
 
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-lime-200">
+            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-blue-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center space-x-4">
@@ -125,7 +125,7 @@ const CareersPage = () => {
                             </Button>
                             <div className="w-px h-6 bg-slate-300" />
                             <div className="flex items-center space-x-2">
-                                <span className="text-xl font-bold bg-gradient-to-r from-lime-600 to-lime-700 bg-clip-text text-transparent">
+                                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
                                     Likh.AI
                                 </span>
                             </div>
@@ -141,10 +141,10 @@ const CareersPage = () => {
 
             {/* Hero Section */}
             <section className="relative overflow-hidden py-20 lg:py-32">
-                <div className="absolute inset-0 bg-gradient-to-r from-lime-50 to-lime-100 opacity-50" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-blue-100 opacity-50" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
-                        <Badge className="mb-6 bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
+                        <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
                             <Building className="w-4 h-4 mr-1" />
                             Join Our Mission
                         </Badge>
@@ -155,7 +155,7 @@ const CareersPage = () => {
                                 Build the Future of
                             </span>
                             <br />
-                            <span className="bg-gradient-to-r from-lime-500 via-lime-600 to-lime-700 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 bg-clip-text text-transparent">
                                 Indian Language Tech
                             </span>
                         </h1>
@@ -163,20 +163,20 @@ const CareersPage = () => {
                         <p className={`text-xl sm:text-2xl text-slate-600 mb-8 max-w-3xl mx-auto transition-all duration-1000 delay-300 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                             }`}>
                             We're building the smartest typing assistant for India's language professionals.
-                            <span className="text-lime-600 font-semibold"> Join us in revolutionizing</span> how Bharat writes, types, and creates.
+                            <span className="text-blue-600 font-semibold"> Join us in revolutionizing</span> how Bharat writes, types, and creates.
                         </p>
 
                         {/* Current Status */}
-                        <div className={`bg-white border border-lime-200 rounded-2xl p-8 max-w-2xl mx-auto mb-12 transition-all duration-1000 delay-500 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                        <div className={`bg-white border border-blue-200 rounded-2xl p-8 max-w-2xl mx-auto mb-12 transition-all duration-1000 delay-500 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                             }`}>
                             <div className="flex items-center justify-center mb-4">
-                                <Coffee className="w-8 h-8 text-lime-500 mr-3" />
+                                <Coffee className="w-8 h-8 text-blue-500 mr-3" />
                                 <h2 className="text-2xl font-bold text-slate-900">We're Still Building</h2>
                             </div>
                             <p className="text-lg text-slate-600 mb-6">
                                 No current positions are open, but we're growing fast. We'll be hiring soon for exciting roles across engineering, design, product, and growth.
                             </p>
-                            <Badge className="bg-lime-100 text-lime-800 px-4 py-2 text-base">
+                            <Badge className="bg-blue-100 text-blue-800 px-4 py-2 text-base">
                                 <Bell className="w-4 h-4 mr-2" />
                                 Get notified when we start hiring
                             </Badge>
@@ -189,7 +189,7 @@ const CareersPage = () => {
             <section id="values" className="py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-lime-100 text-lime-800 border-lime-300">Our Culture</Badge>
+                        <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">Our Culture</Badge>
                         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
                             What Drives Us Every Day
                         </h2>
@@ -200,9 +200,9 @@ const CareersPage = () => {
 
                     <div className="grid md:grid-cols-2 gap-8">
                         {values.map((value, index) => (
-                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-r from-lime-50 to-lime-100">
+                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-r from-blue-50 to-blue-100">
                                 <CardContent className="p-8">
-                                    <value.icon className="w-12 h-12 text-lime-500 mb-4" />
+                                    <value.icon className="w-12 h-12 text-blue-500 mb-4" />
                                     <h3 className="text-xl font-bold text-slate-900 mb-3">{value.title}</h3>
                                     <p className="text-slate-600">{value.description}</p>
                                 </CardContent>
@@ -213,10 +213,10 @@ const CareersPage = () => {
             </section>
 
             {/* Meet the Team */}
-            {/* <section className="py-20 bg-gradient-to-br from-lime-150 to-lime-200">
+            {/* <section className="py-20 bg-gradient-to-br from-blue-150 to-blue-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-lime-200 text-lime-800 border-lime-300">The Founding Team</Badge>
+                        <Badge className="mb-4 bg-blue-200 text-blue-800 border-blue-300">The Founding Team</Badge>
                         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
                             You'll Be Working With
                         </h2>
@@ -231,15 +231,15 @@ const CareersPage = () => {
                             { name: "", role: "Co-founder & CPO", initials: "AB", bio: "Product strategist focused on user-centered design and experience" },
                             { name: "", role: "Co-founder & CTO", initials: "AM", bio: "Technical architect building scalable AI-powered solutions" }
                         ].map((member, index) => (
-                            <Card key={index} className="border-0 shadow-lg text-center bg-gradient-to-r from-lime-50 to-lime-100">
+                            <Card key={index} className="border-0 shadow-lg text-center bg-gradient-to-r from-blue-50 to-blue-100">
                                 <CardContent className="p-6">
-                                    <Avatar className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-lime-400 to-lime-600">
+                                    <Avatar className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-blue-400 to-blue-600">
                                         <AvatarFallback className="text-white text-xl font-bold">
                                             {member.initials}
                                         </AvatarFallback>
                                     </Avatar>
                                     <h3 className="text-xl font-bold text-slate-900 mb-1">{member.name}</h3>
-                                    <p className="text-lime-600 font-semibold mb-3">{member.role}</p>
+                                    <p className="text-blue-600 font-semibold mb-3">{member.role}</p>
                                     <p className="text-slate-600 text-sm">{member.bio}</p>
                                 </CardContent>
                             </Card>
@@ -252,7 +252,7 @@ const CareersPage = () => {
             <section id="future-roles" className="py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-lime-100 text-lime-800 border-lime-300">Coming Soon</Badge>
+                        <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">Coming Soon</Badge>
                         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
                             Roles We'll Be Hiring For
                         </h2>
@@ -262,10 +262,10 @@ const CareersPage = () => {
                     </div>
                     <div className="grid md:grid-cols-2 gap-8">
                         {futureRoles.map((value, index) => (
-                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-r from-lime-50 to-lime-100">
+                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-r from-blue-50 to-blue-100">
                                 <CardHeader className="py-0">
                                     <div className="flex flex-row items-center gap-4">
-                                        <value.icon className="w-12 h-12 text-lime-500 mb-4" />
+                                        <value.icon className="w-12 h-12 text-blue-500 mb-4" />
                                         <h3 className="text-xl font-bold text-slate-900 mb-3">{value.category}</h3>
                                     </div>
                                 </CardHeader>
@@ -282,9 +282,9 @@ const CareersPage = () => {
             </section>
 
             {/* Notify Me Section */}
-            <section className="py-20 bg-gradient-to-r from-lime-100 via-lime-150 to-lime-200 text-white">
+            <section className="py-20 bg-gradient-to-r from-blue-100 via-blue-150 to-blue-200 text-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <Rocket className="w-16 h-16 mx-auto mb-6 opacity-90 text-lime-500" />
+                    <Rocket className="w-16 h-16 mx-auto mb-6 opacity-90 text-blue-500" />
                     <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-slate-900">
                         Be the First to Know
                     </h2>
@@ -299,9 +299,9 @@ const CareersPage = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
-                                className="flex-1 px-4 py-3 rounded-lg text-slate-900 ring-1 ring-lime-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-lime-300"
+                                className="flex-1 px-4 py-3 rounded-lg text-slate-900 ring-1 ring-blue-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
                             />
-                            <Button onClick={handleNotifySubmit} className="bg-white text-lime-600 hover:bg-lime-50 px-6 py-3 rounded-lg font-semibold">
+                            <Button onClick={handleNotifySubmit} className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-semibold">
                                 <Bell className="w-4 h-4 mr-2" />
                                 Notify Me
                             </Button>
@@ -352,11 +352,11 @@ const CareersPage = () => {
                                 description: "Work on something meaningful that preserves and promotes India's linguistic diversity."
                             }
                         ].map((reason, index) => (
-                            <Card key={index} className="border-0 shadow-lg text-center hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-lime-150 to-lime-200">
+                            <Card key={index} className="border-0 shadow-lg text-center hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-100 via-blue-150 to-blue-200">
                                 <CardContent className="p-8">
-                                    <reason.icon className="w-12 h-12 text-lime-500 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-lime-50 mb-3 text-slate-900">{reason.title}</h3>
-                                    <p className="text-lime-600">{reason.description}</p>
+                                    <reason.icon className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+                                    <h3 className="text-xl font-bold text-slate-900 mb-3">{reason.title}</h3>
+                                    <p className="text-blue-600">{reason.description}</p>
                                 </CardContent>
                             </Card>
                         ))}

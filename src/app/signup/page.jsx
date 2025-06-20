@@ -4,19 +4,19 @@ import { Badge } from "@/components/ui/badge"
 
 export default function SignupPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2 bg-gradient-to-br from-lime-50 via-white to-lime-100">
+    <div className="grid min-h-svh lg:grid-cols-2 bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         {/* Header with Likh.AI branding */}
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-gradient-to-r from-lime-500 to-lime-600 text-white flex size-8 items-center justify-center rounded-lg">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white flex size-8 items-center justify-center rounded-lg">
               <Type className="size-4" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-lime-600 to-lime-700 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
               Likh.AI
             </span>
           </a>
-          <Badge className="ml-auto bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
+          <Badge className="ml-auto bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
             <Sparkles className="w-3 h-3 mr-1" />
             Sign Up
           </Badge>
@@ -32,20 +32,20 @@ export default function SignupPage() {
         {/* Footer */}
         <div className="text-center text-sm text-slate-500">
           By signing up, you agree to our{" "}
-          <a href="/eula" className="text-lime-600 hover:text-lime-700 underline underline-offset-4">
+          <a href="/eula" className="text-blue-600 hover:text-blue-700 underline underline-offset-4">
             Terms of Service
           </a>{" "}
           and{" "}
-          <a href="/privacy" className="text-lime-600 hover:text-lime-700 underline underline-offset-4">
+          <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline underline-offset-4">
             Privacy Policy
           </a>
         </div>
       </div>
 
       {/* Right side with gradient and pattern */}
-      <div className="relative hidden lg:block bg-gradient-to-br from-lime-500 via-lime-600 to-lime-700 overflow-hidden">
+      <div className="relative hidden lg:block bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 overflow-hidden">
         {/* Decorative elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-lime-400/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-transparent"></div>
         <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
 
@@ -57,7 +57,7 @@ export default function SignupPage() {
             </div>
             <div className="space-y-4">
               <h2 className="text-4xl font-bold">Welcome to Likh.AI</h2>
-              <p className="text-xl text-lime-100 max-w-md">
+              <p className="text-xl text-blue-100 max-w-md">
                 Your AI-powered typing assistant for Indian languages. Start creating content with intelligent
                 suggestions and seamless language support.
               </p>
