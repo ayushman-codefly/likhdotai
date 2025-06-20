@@ -27,7 +27,7 @@ import {
 import { setUserInDB } from "@/app/api/handlers/userHandlers"
 import { useRouter } from "next/navigation"
 
-export default function OnboardingPage({ userId, email }) {
+export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
   const [name, setName] = useState("")
   const [selectedAvatar, setSelectedAvatar] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -106,20 +106,15 @@ export default function OnboardingPage({ userId, email }) {
       // Simulate API call to save user data
       const userData = {
         id: userId,
-        name: name.trim(),
+        fullname: name.trim(),
         email,
-        emailVerified: true,
         image: selectedAvatar,
         usecase: selectedUseCase,
-        onboarded: true,
       }
 
       // Here you would typically make an API call to save the data
-      console.log("Saving user data:", userData)
-
       // Simulate API delay
       const { dbUser, error } = await setUserInDB({ ...userData })
-      console.log({ dbUser, error })
       setIsCompleted(true)
     } catch (error) {
       console.error("Error completing onboarding:", error)
@@ -142,19 +137,19 @@ export default function OnboardingPage({ userId, email }) {
 
   if (isCompleted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-lime-50 via-white to-lime-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-lg border-b border-lime-200 px-4 py-4">
+        <div className="bg-white/80 backdrop-blur-lg border-b border-blue-200 px-4 py-4">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-lime-500 to-lime-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Type className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-lime-600 to-lime-700 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
                 Likh.AI
               </span>
             </div>
-            <Badge className="bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
+            <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
               <Sparkles className="w-4 h-4 mr-1" />
               Setup Complete
             </Badge>
@@ -166,10 +161,10 @@ export default function OnboardingPage({ userId, email }) {
           <Card className="w-full max-w-2xl border-0 shadow-2xl bg-white">
             <CardHeader className="text-center pb-6">
               <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-r from-lime-500 to-lime-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="h-10 w-10 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-lime-400 to-lime-500 rounded-full flex items-center justify-center">
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
               </div>
@@ -180,28 +175,28 @@ export default function OnboardingPage({ userId, email }) {
                 Your profile has been set up successfully
               </CardDescription>
               <div className="flex justify-center space-x-2 mt-4">
-                <div className="w-3 h-3 rounded-full bg-lime-500" />
-                <div className="w-3 h-3 rounded-full bg-lime-500" />
+                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                <div className="w-3 h-3 rounded-full bg-blue-500" />
               </div>
             </CardHeader>
 
             <CardContent className="px-8 pb-8">
               <div className="space-y-8">
                 {/* Profile Summary */}
-                <div className="bg-gradient-to-r from-lime-50 to-lime-100 rounded-2xl p-6">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6">
                   <div className="flex items-center justify-center space-x-4">
                     <Image
                       src={selectedAvatar || "/placeholder.svg"}
                       alt="Your avatar"
                       width={60}
                       height={60}
-                      className="rounded-full border-4 border-lime-200"
+                      className="rounded-full border-4 border-blue-200"
                     />
                     <div className="text-left">
                       <p className="font-semibold text-slate-900">{name}</p>
                       <p className="text-slate-600 text-sm">{email}</p>
                       {selectedUseCase && (
-                        <p className="text-lime-600 text-sm font-medium">
+                        <p className="text-blue-600 text-sm font-medium">
                           {useCases.find((uc) => uc.id === selectedUseCase)?.title}
                         </p>
                       )}
@@ -230,9 +225,9 @@ export default function OnboardingPage({ userId, email }) {
                     Back
                   </Button>
                   <Button
-                    onClick={() => router.push("/dashboard")}
+                    onClick={checkUserOnboarded}
                     size="lg"
-                    className="flex-1 bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     Continue to Dashboard
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -247,19 +242,19 @@ export default function OnboardingPage({ userId, email }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-white to-lime-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-lg border-b border-lime-200 px-4 py-4">
+      <div className="bg-white/80 backdrop-blur-lg border-b border-blue-200 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-lime-500 to-lime-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
               <Type className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-lime-600 to-lime-700 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
               Likh.AI
             </span>
           </div>
-          <Badge className="bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
+          <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
             <Sparkles className="w-4 h-4 mr-1" />
             Setup Your Profile
           </Badge>
@@ -270,7 +265,7 @@ export default function OnboardingPage({ userId, email }) {
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
         <Card className="w-full max-w-2xl border-0 shadow-2xl bg-white">
           <CardHeader className="text-center pb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-lime-500 to-lime-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="h-8 w-8 text-white" />
             </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -283,10 +278,10 @@ export default function OnboardingPage({ userId, email }) {
             </CardDescription>
             <div className="flex justify-center space-x-2 mt-4">
               <div
-                className={`w-3 h-3 rounded-full transition-colors ${currentStep >= 1 ? "bg-lime-500" : "bg-slate-200"}`}
+                className={`w-3 h-3 rounded-full transition-colors ${currentStep >= 1 ? "bg-blue-500" : "bg-slate-200"}`}
               />
               <div
-                className={`w-3 h-3 rounded-full transition-colors ${currentStep >= 2 ? "bg-lime-500" : "bg-slate-200"}`}
+                className={`w-3 h-3 rounded-full transition-colors ${currentStep >= 2 ? "bg-blue-500" : "bg-slate-200"}`}
               />
             </div>
           </CardHeader>
@@ -307,7 +302,7 @@ export default function OnboardingPage({ userId, email }) {
                         type="text"
                         placeholder={email}
                         disabled
-                        className="placeholder-slate-800 focus:bg-amber-500 bg-gradient-to-r from-lime-50 to-lime-100 border-lime-200 text-slate-700 h-12 text-lg"
+                        className="placeholder-slate-800 focus:bg-amber-500 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-slate-700 h-12 text-lg"
                       />
                       <Badge
                         variant="secondary"
@@ -333,7 +328,7 @@ export default function OnboardingPage({ userId, email }) {
                       onChange={(e) => setName(e.target.value)}
                       required
                       autoComplete="off"
-                      className="text-black border-slate-200 focus:border-lime-400 focus:ring-lime-400 h-12 text-lg"
+                      className="text-black border-slate-200 focus:border-blue-400 focus:ring-blue-400 h-12 text-lg"
                     />
                   </div>
 
@@ -348,8 +343,8 @@ export default function OnboardingPage({ userId, email }) {
                           onClick={() => setSelectedAvatar(avatarUrl)}
                           className={`relative rounded-full overflow-hidden border-4 transition-all duration-300 hover:scale-110 hover:shadow-lg ${
                             selectedAvatar === avatarUrl
-                              ? "border-lime-500 ring-4 ring-lime-200 shadow-lg"
-                              : "border-slate-200 hover:border-lime-300"
+                              ? "border-blue-500 ring-4 ring-blue-200 shadow-lg"
+                              : "border-slate-200 hover:border-blue-300"
                           }`}
                         >
                           <Image
@@ -373,7 +368,7 @@ export default function OnboardingPage({ userId, email }) {
                       type="button"
                       onClick={handleNextStep}
                       size="lg"
-                      className="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!name.trim() || !selectedAvatar}
                     >
                       Next: Choose Your Use Case
@@ -400,15 +395,15 @@ export default function OnboardingPage({ userId, email }) {
                           onClick={() => setSelectedUseCase(useCase.id)}
                           className={`p-4 rounded-xl border-2 text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
                             selectedUseCase === useCase.id
-                              ? "border-lime-500 bg-gradient-to-r from-lime-50 to-lime-100 ring-2 ring-lime-200"
-                              : "border-slate-200 bg-white hover:border-lime-300"
+                              ? "border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 ring-2 ring-blue-200"
+                              : "border-slate-200 bg-white hover:border-blue-300"
                           }`}
                         >
                           <div className="flex items-start space-x-3">
                             <div
                               className={`p-2 rounded-lg ${
                                 selectedUseCase === useCase.id
-                                  ? "bg-lime-500 text-white"
+                                  ? "bg-blue-500 text-white"
                                   : "bg-slate-100 text-slate-600"
                               }`}
                             >
@@ -418,7 +413,7 @@ export default function OnboardingPage({ userId, email }) {
                               <h4 className="font-semibold text-slate-900 mb-1">{useCase.title}</h4>
                               <p className="text-sm text-slate-600">{useCase.description}</p>
                             </div>
-                            {selectedUseCase === useCase.id && <CheckCircle className="w-5 h-5 text-lime-500 mt-1" />}
+                            {selectedUseCase === useCase.id && <CheckCircle className="w-5 h-5 text-blue-500 mt-1" />}
                           </div>
                         </button>
                       ))}
@@ -444,7 +439,7 @@ export default function OnboardingPage({ userId, email }) {
                     <Button
                       type="submit"
                       size="lg"
-                      className="flex-1 bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!selectedUseCase || isSubmitting}
                     >
                       {isSubmitting ? (

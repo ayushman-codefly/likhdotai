@@ -1,6 +1,5 @@
-import postgres from 'postgres'
+import { createSupabaseBrowserClient } from "./lib/supabase/browser-client";
 
-const connectionString = process.env.DATABASE_URL
-const sql = postgres(connectionString)
+const sql = createSupabaseBrowserClient();
 
 export default sql

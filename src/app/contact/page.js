@@ -43,9 +43,9 @@ const ContactPage = () => {
   const [isVisible, setIsVisible] = useState(true)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-white to-lime-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-lime-200">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
@@ -60,7 +60,7 @@ const ContactPage = () => {
               </Button>
               <div className="w-px h-6 bg-slate-300" />
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold bg-gradient-to-r from-lime-600 to-lime-700 bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
                   Likh.AI
                 </span>
               </div>
@@ -71,10 +71,10 @@ const ContactPage = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20">
-        <div className="absolute inset-0 bg-gradient-to-r from-lime-50 to-lime-100 opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-blue-100 opacity-50" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Badge className="mb-6 bg-gradient-to-r from-lime-100 to-lime-200 text-lime-800 border-lime-300">
+            <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
               <Mail className="w-4 h-4 mr-1" />
               Get in Touch
             </Badge>
@@ -88,7 +88,7 @@ const ContactPage = () => {
                 Contact
               </span>
               <br />
-              <span className="bg-gradient-to-r from-lime-500 via-lime-600 to-lime-700 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 bg-clip-text text-transparent">
                 Likh.AI
               </span>
             </h1>
@@ -99,7 +99,7 @@ const ContactPage = () => {
               }`}
             >
               Ready to transform your typing experience? Have questions about enterprise solutions?
-              <span className="text-lime-600 font-semibold"> We'd love to hear from you.</span>
+              <span className="text-blue-600 font-semibold"> We'd love to hear from you.</span>
             </p>
           </div>
         </div>
@@ -115,14 +115,14 @@ const ContactPage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Email Card */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-8 text-center">
-                <Mail className="w-24 h-24 text-lime-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Email Us</h3>
+                <Mail className="w-14 h-14 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Email Us</h3>
                 <p className="text-slate-600 mb-4">For general inquiries and support</p>
                 <a
                   href={`mailto:${CONTACT_INFO.email}`}
-                  className="text-lime-600 font-semibold hover:text-lime-700 transition-colors text-lg"
+                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors text-lg"
                 >
                   {CONTACT_INFO.email}
                 </a>
@@ -130,16 +130,16 @@ const ContactPage = () => {
             </Card>
 
             {/* WhatsApp Card */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-8 text-center">
-                <Phone className="w-24 h-24 text-lime-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">WhatsApp</h3>
+                <Phone className="w-14 h-14 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-slate-900 mb-2">WhatsApp</h3>
                 <p className="text-slate-600 mb-4">Quick questions and instant support</p>
                 <a
                   href={CONTACT_INFO.whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-lime-600 font-semibold hover:text-lime-700 transition-colors text-lg"
+                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors text-lg"
                 >
                   {CONTACT_INFO.phone}
                 </a>
@@ -147,18 +147,23 @@ const ContactPage = () => {
             </Card>
 
             {/* Address Card */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1 md:col-span-2 lg:col-span-1">
-              <CardContent className="p-8 text-center">
-                <MapPin className="w-24 h-24 text-lime-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Visit Us</h3>
-                <p className="text-slate-600 mb-4">Our office location</p>
-                <div className="text-slate-600 space-y-1">
-                  <p className="font-semibold">{CONTACT_INFO.address.line1}</p>
-                  <p>{CONTACT_INFO.address.line2}</p>
-                  <p>{CONTACT_INFO.address.line3}</p>
-                  <p>{CONTACT_INFO.address.pincode}</p>
-                  <p>{CONTACT_INFO.address.country}</p>
-                </div>
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1 md:col-span-2 lg:col-span-1">
+              
+            <CardContent className="p-8 text-center">
+                <Clock className="w-14 h-14 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Business Hours</h3>
+                <p className="text-slate-600 mb-4">Quick questions and instant support</p>
+                <span
+                  href={CONTACT_INFO.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors text-lg"
+                >
+                  {CONTACT_INFO.businessHours.weekdays}
+                </span>
+                <p className="text-sm text-slate-500 mt-4">
+                We typically respond to emails within 24 hours during business days
+              </p>
               </CardContent>
             </Card>
           </div>
@@ -166,11 +171,11 @@ const ContactPage = () => {
       </section>
 
       {/* Business Hours */}
-      <section className="py-20 bg-gradient-to-br from-lime-50 to-lime-100">
+      {/* <section className="py-20 bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Clock className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+              <Clock className="w-14 h-14 text-blue-600 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-slate-900 mb-6">Business Hours</h3>
               <div className="space-y-3 text-slate-600">
                 <p className="text-lg">{CONTACT_INFO.businessHours.weekdays}</p>
@@ -183,13 +188,13 @@ const ContactPage = () => {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section> */}
 
       {/* Team Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-lime-100 text-lime-800 border-lime-300">Meet the Founder</Badge>
+            <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">Meet the Founder</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">The visionary behind Likh.AI</h2>
             <p className="text-lg text-slate-600">
               Building for the people who power India's language industries — one keystroke at a time.
@@ -197,22 +202,22 @@ const ContactPage = () => {
           </div>
 
           <div className="max-w-md mx-auto">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
               <CardContent className="p-8 text-center">
-                <Avatar className="w-32 h-32 mx-auto mb-6 bg-gradient-to-r from-lime-500 to-lime-600">
+                <Avatar className="w-32 h-32 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-blue-600">
                   <AvatarImage src={TEAM_INFO.founder.image || "/placeholder.svg"} alt={TEAM_INFO.founder.initials} />
                   <AvatarFallback className="text-white text-3xl font-bold">
                     {TEAM_INFO.founder.initials}
                   </AvatarFallback>
                 </Avatar>
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">{TEAM_INFO.founder.name}</h3>
-                <p className="text-lime-600 font-semibold mb-4">{TEAM_INFO.founder.role}</p>
+                <p className="text-blue-600 font-semibold mb-4">{TEAM_INFO.founder.role}</p>
                 <p className="text-slate-600 mb-6">{TEAM_INFO.founder.bio}</p>
                 <a
                   href={TEAM_INFO.founder.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 text-lime-600 hover:text-lime-700 transition-colors font-semibold"
+                  className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors font-semibold"
                 >
                   <Linkedin className="w-5 h-5" />
                   <span>Connect on LinkedIn</span>
@@ -224,11 +229,11 @@ const ContactPage = () => {
       </section>
 
       {/* Enterprise Solutions */}
-      <section className="py-20 bg-gradient-to-br from-lime-50 to-lime-100">
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-lime-100 to-lime-200 rounded-3xl">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Building className="w-24 h-24 text-lime-600 mx-auto mb-4" />
+              <Building className="w-14 h-14 text-blue-600 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-slate-900 mb-4">Enterprise Solutions</h3>
               <p className="text-slate-600 mb-6 text-lg">
                 Looking for custom integrations, bulk licenses, or specialized features for your organization? Let's
@@ -236,7 +241,7 @@ const ContactPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
-                  className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white px-6 py-3 rounded-full"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-full"
                   onClick={() =>
                     window.open(`mailto:${CONTACT_INFO.email}?subject=Enterprise Solutions Inquiry`, "_blank")
                   }
@@ -246,7 +251,7 @@ const ContactPage = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-lime-600 text-lime-600 hover:bg-lime-50 px-6 py-3 rounded-full"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-full"
                   onClick={() => window.open(CONTACT_INFO.whatsappLink, "_blank")}
                 >
                   <Phone className="w-4 h-4 mr-2" />

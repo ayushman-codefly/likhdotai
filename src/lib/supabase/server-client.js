@@ -15,7 +15,6 @@ export function createSupabaseServerClient(component = false) {
         setAll(cookiesToSet) {
           if (component) return;
           cookiesToSet.forEach(({ name, value, options }) => {
-            console.log({ name, value, options })
             cookieStore.set(name, value, options)
           });
         },
