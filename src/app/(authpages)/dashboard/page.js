@@ -45,6 +45,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 import useSession from "@/lib/supabase/use-session"
 import { useRouter } from "next/navigation"
 import OnboardingPage from "@/components/onboarding-page"
+import dynamic from "next/dynamic"
+
+const EditorPage = dynamic(() => import('@/app/_reusable/Editor'), {
+  ssr: false,
+});
 
 function Dashboard() {
   const session = useSession()
@@ -268,7 +273,7 @@ function Dashboard() {
           </div>
         </div>
       </nav>
-      
+      <EditorPage />
     </div>
   )
 }

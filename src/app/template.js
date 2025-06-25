@@ -46,6 +46,7 @@ export default function Template({ children }) {
         </div>
       {children}
       {/* Fixed Footer */}
+      <div className="py-20 md:py-10 lg:py-0 bg-white"></div>
       <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">

@@ -55,7 +55,7 @@ export default function WhoWeServeSection() {
             <div className="content">
                 <div className="min-h-screen bg-white flex items-center">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                        <div className="text-left flex flex-col md:flex-row items-center justify-between pt-20 gap-8">
+                        <div className="text-left flex flex-col md:flex-row items-center justify-between gap-8">
 
                             {/* Left Content */}
                             <div className="w-full md:w-1/2 p-4">
