@@ -122,7 +122,7 @@ const FeatureSection = () => {
   }, [])
 
   return (
-    <div className="relative min-w-screen flex flex-row gap-0">
+    <div id="features" className="relative min-w-screen flex flex-row gap-0">
                  <style>{`
         /* Default styles for all screen sizes */
         #features-image{

@@ -1,281 +1,826 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { getUserFromDB } from "@/app/api/handlers/userHandlers"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import EditorPage from "@/app/_reusables/Editor"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Type,
-  Mic,
-  Brain,
-  Zap,
-  Globe,
-  BookOpen,
-  CheckCircle,
-  Sparkles,
-  LogOut,
-  Settings,
-  User,
-  PenTool,
-  Megaphone,
+  Send,
   FileText,
-  Headphones,
-  GraduationCap,
-  Search,
-  Play,
-  Download,
-  Star,
-  ArrowRight,
-  Keyboard,
-  Languages,
-  ToggleLeft,
-  IndianRupee,
+  Sparkles,
+  Check,
+  X,
+  Bot,
+  Loader2,
+  Zap,
 } from "lucide-react"
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
-import useSession from "@/lib/supabase/use-session"
-import { useRouter } from "next/navigation"
-import OnboardingPage from "@/components/onboarding-page"
-import dynamic from "next/dynamic"
 
-const EditorPage = dynamic(() => import('@/app/_reusable/Editor'), {
-  ssr: false,
-});
-
-function Dashboard() {
-  const session = useSession()
-  const user = session?.user
-  const [dbUser, setDbUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeDemo, setActiveDemo] = useState(0);
-  const [showOnboard,setShowOnboard] = useState(false);
-
-  const supabase = createSupabaseBrowserClient()
-  const router = useRouter()
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    sessionStorage.clear()
-    router.push("/")
+// Intelligent HTML-aware diff function
+function createIntelligentDiff(original, modified) {
+  // Parse HTML content into meaningful chunks (tags, text nodes, etc.)
+  const parseHTML = (html) => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html')
+    const chunks = []
+    
+    const traverse = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim()
+        if (text) {
+          chunks.push({
+            type: 'text',
+            content: text,
+            html: text
+          })
+        }
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const tagName = node.tagName.toLowerCase()
+        const attributes = Array.from(node.attributes)
+          .map(attr => `${attr.name}="${attr.value}"`)
+          .join(' ')
+        
+        chunks.push({
+          type: 'element',
+          tagName,
+          content: node.innerHTML,
+          html: node.outerHTML,
+          openTag: `<${tagName}${attributes ? ' ' + attributes : ''}>`,
+          closeTag: `</${tagName}>`,
+          textContent: node.textContent.trim()
+        })
+      }
+    }
+    
+    Array.from(doc.body.firstChild.childNodes).forEach(traverse)
+    return chunks
   }
 
-  const checkUserOnboarded = async () => {
-    if (!user?.email) return
+  const originalChunks = parseHTML(original || '')
+  const modifiedChunks = parseHTML(modified || '')
+  const changes = []
+  let changeId = 0
+
+  // Simple diff algorithm for chunks
+  let i = 0, j = 0
+  
+  while (i < originalChunks.length || j < modifiedChunks.length) {
+    if (i >= originalChunks.length) {
+      // Only modified chunks left - these are additions
+      changes.push({
+        id: changeId++,
+        type: 'added',
+        content: modifiedChunks[j].html,
+        textContent: modifiedChunks[j].textContent || modifiedChunks[j].content,
+        chunk: modifiedChunks[j]
+      })
+      j++
+    } else if (j >= modifiedChunks.length) {
+      // Only original chunks left - these are removals
+      changes.push({
+        id: changeId++,
+        type: 'removed',
+        content: originalChunks[i].html,
+        textContent: originalChunks[i].textContent || originalChunks[i].content,
+        chunk: originalChunks[i]
+      })
+      i++
+    } else if (originalChunks[i].html === modifiedChunks[j].html) {
+      // Chunks are identical
+      changes.push({
+        id: changeId++,
+        type: 'unchanged',
+        content: originalChunks[i].html,
+        textContent: originalChunks[i].textContent || originalChunks[i].content,
+        chunk: originalChunks[i]
+      })
+      i++
+      j++
+    } else {
+      // Check if it's a modification of the same element type
+      if (originalChunks[i].type === 'element' && 
+          modifiedChunks[j].type === 'element' && 
+          originalChunks[i].tagName === modifiedChunks[j].tagName) {
+        // Same element type but different content - show as modification
+        changes.push({
+          id: changeId++,
+          type: 'modified',
+          originalContent: originalChunks[i].html,
+          modifiedContent: modifiedChunks[j].html,
+          originalText: originalChunks[i].textContent || originalChunks[i].content,
+          modifiedText: modifiedChunks[j].textContent || modifiedChunks[j].content,
+          tagName: originalChunks[i].tagName
+        })
+        i++
+        j++
+      } else {
+        // Different elements - show as remove + add
+        changes.push({
+          id: changeId++,
+          type: 'removed',
+          content: originalChunks[i].html,
+          textContent: originalChunks[i].textContent || originalChunks[i].content,
+          chunk: originalChunks[i]
+        })
+        changes.push({
+          id: changeId++,
+          type: 'added',
+          content: modifiedChunks[j].html,
+          textContent: modifiedChunks[j].textContent || modifiedChunks[j].content,
+          chunk: modifiedChunks[j]
+        })
+        i++
+        j++
+      }
+    }
+  }
+
+  return changes
+}
+
+export default function Page() {
+  const [document, setDocument] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [showAIDialog, setShowAIDialog] = useState(false)
+  const [aiPrompt, setAiPrompt] = useState("")
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [showDiffView, setShowDiffView] = useState(false)
+  const [diffChanges, setDiffChanges] = useState([])
+  const [acceptedChanges, setAcceptedChanges] = useState(new Set())
+  const [rejectedChanges, setRejectedChanges] = useState(new Set())
+  const [originalDocument, setOriginalDocument] = useState("")
+  const [modifiedDocument, setModifiedDocument] = useState("")
+
+  const chatContainerRef = useRef(null)
+  const chatInputRef = useRef(null)
+
+  // Custom chat implementation for Gemma2:9b
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+
+    const userMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+
+    // Clear the contentEditable div
+    if (chatInputRef.current) {
+      chatInputRef.current.textContent = ""
+    }
+
+    setIsLoading(true)
 
     try {
-      const { dbUser: userData, error } = await getUserFromDB(user.id)
-      if (!error && !userData) {
-        setShowOnboard(true);
-      } else if (!error && userData) {
-        setDbUser(userData)
-        setShowOnboard(false);
+      // Send full document context with the message
+      const contextualMessages = [
+        {
+          role: "system",
+          content: `You are an AI writing assistant. Current document content: ${document || "Empty document"}. 
+
+IMPORTANT: Return ONLY the content that would go inside the <body> tag. Do not include <html>, <head>, <body>, or any other wrapper tags. Just return the actual content elements like <h1>, <p>, <div>, etc.
+
+Please provide improved version of the entire document based on the user's request.`,
+        },
+        ...messages,
+        userMessage,
+      ]
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: contextualMessages,
+        }),
+      })
+
+      console.log({response}) 
+
+      if (!response.ok) {
+        throw new Error("Failed to get response")
       }
+
+      // Create initial assistant message with empty content
+      const assistantMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "",
+        hasChanges: false,
+        suggestedDocument: "",
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+
+      //body is a stream
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let assistantContent = ""
+
+      while (true) {
+        const data = await reader.read()
+        console.log({data})
+        if (data.done) break
+        const textChunk = decoder.decode(data.value, { stream: true })
+        console.log({textChunk})
+        assistantContent += textChunk
+        
+        // Update the message in real-time during streaming
+        setMessages((prev) => 
+          prev.map((msg) => 
+            msg.id === assistantMessage.id 
+              ? { ...msg, content: assistantContent, suggestedDocument: assistantContent }
+              : msg
+          )
+        )
+        
+        // Auto-scroll during streaming
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+        }
+      }
+      
+      // Mark as having changes after streaming is complete
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === assistantMessage.id 
+            ? { ...msg, hasChanges: true }
+            : msg
+        )
+      )
     } catch (error) {
-      console.log("Error fetching user:", error)
+      console.error("Error:", error)
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again.",
+        hasChanges: false,
+      }
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleInputChange = (e) => {
+    const content = e.target.textContent || ""
+    setInput(content)
+  }
+
+  const applyChangesToEditor = (messageId, suggestedContent) => {
+    setOriginalDocument(document)
+    setModifiedDocument(suggestedContent)
+
+    const changes = createIntelligentDiff(document, suggestedContent)
+    setDiffChanges(changes)
+    setShowDiffView(true)
+
+    // Update message to show changes are being reviewed
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === messageId ? { ...msg, changesApplied: true, hasChanges: false } : msg)),
+    )
+  }
+
+  const acceptAllChanges = () => {
+    // Build the final document from accepted changes
+    let finalDocument = ""
+    
+    diffChanges.forEach(change => {
+      if (change.type === "unchanged") {
+        finalDocument += change.content
+      } else if (change.type === "added" || change.type === "modified") {
+        finalDocument += change.type === "modified" ? change.modifiedContent : change.content
+      }
+      // Skip removed changes (don't add them to final document)
+    })
+    
+    setDocument(finalDocument)
+    setShowDiffView(false)
+    setDiffChanges([])
+    setAcceptedChanges(new Set())
+    setRejectedChanges(new Set())
+  }
+
+  const rejectAllChanges = () => {
+    setShowDiffView(false)
+    setDiffChanges([])
+    setAcceptedChanges(new Set())
+    setRejectedChanges(new Set())
+  }
+
+  const applySelectedChanges = () => {
+    // Build the final document based on accepted/rejected changes
+    let finalDocument = ""
+    
+    diffChanges.forEach(change => {
+      if (change.type === "unchanged") {
+        finalDocument += change.content
+      } else if (change.type === "removed") {
+        // Only keep removed content if it wasn't explicitly rejected
+        if (!rejectedChanges.has(change.id)) {
+          finalDocument += change.content
+        }
+      } else if (change.type === "added") {
+        // Only add new content if it was explicitly accepted
+        if (acceptedChanges.has(change.id)) {
+          finalDocument += change.content
+        }
+      } else if (change.type === "modified") {
+        // Use modified content if accepted, original if rejected/not decided
+        if (acceptedChanges.has(change.id)) {
+          finalDocument += change.modifiedContent
+        } else {
+          finalDocument += change.originalContent
+        }
+      }
+    })
+    
+    setDocument(finalDocument)
+    setShowDiffView(false)
+    setDiffChanges([])
+    setAcceptedChanges(new Set())
+    setRejectedChanges(new Set())
+  }
+
+  // Handle keyboard events
   useEffect(() => {
-    if (!user) {
-      // router.push('/login')
-      return
+    if (typeof window === "undefined") return
+
+    const handleKeyDown = (e) => {
+      if (showDiffView && e.key === "Escape") {
+        e.preventDefault()
+        rejectAllChanges()
+      }
     }
-    checkUserOnboarded()
-  }, [user])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveDemo((prev) => (prev + 1) % 7)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [showDiffView])
 
-  const useCaseIcons = {
-    "content-creation": PenTool,
-    translation: Globe,
-    "digital-marketing": Megaphone,
-    publishing: BookOpen,
-    government: FileText,
-    "customer-support": Headphones,
-    education: GraduationCap,
-    research: Search,
+  const handleAIGenerate = async () => {
+    if (!aiPrompt.trim()) return
+
+    setShowAIDialog(false)
+    setIsGenerating(true)
+
+    const contextPrompt = `Generate content for: ${aiPrompt}`
+
+    try {
+      const response = await fetch("/api/generate-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: contextPrompt,
+          context: document,
+        }),
+      })
+
+      const data = await response.json()
+      const generatedContent = data.content || ""
+
+      // Append generated content to the document
+      const currentContent = document || ""
+      const newContent = currentContent + (currentContent ? "\n\n" : "") + generatedContent
+      setDocument(newContent)
+    } catch (error) {
+      console.error("Error generating content:", error)
+    }
+
+    setAiPrompt("")
+    setIsGenerating(false)
   }
 
-  const useCaseTitles = {
-    "content-creation": "Content Creation",
-    translation: "Translation & Localization",
-    "digital-marketing": "Digital Marketing & Social Media",
-    publishing: "Publishing & Print Media",
-    government: "Government & Legal Documentation",
-    "customer-support": "Customer Support & Communication",
-    education: "Education & E-learning",
-    research: "Research & Linguistics",
+  const generateContent = async (prompt) => {
+    setIsGenerating(true)
+    const contextPrompt = document
+      ? `Here's the existing document:\n\n${document}\n\nUser request: ${prompt}\n\nPlease provide an improved version of the entire document.`
+      : `Create content for: ${prompt}`
+
+    setInput(contextPrompt)
+    setTimeout(() => {
+      handleSubmit({ preventDefault: () => {} })
+      setIsGenerating(false)
+    }, 100)
   }
-
-  const features = [
-    {
-      icon: Type,
-      title: "Phonetic Typing",
-      description: "Type Hindi using English keyboard with intelligent phonetic conversion",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-    {
-      icon: Keyboard,
-      title: "Indic Keyboard Support",
-      description: "Native support for all major Indic keyboard layouts and scripts",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-    {
-      icon: CheckCircle,
-      title: "Smart Spell Checker",
-      description: "Advanced spell checking for Hindi, Bengali, Odia and more languages",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-    {
-      icon: Brain,
-      title: "Grammar Checker",
-      description: "AI-powered grammar correction for professional Indian language content",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-    {
-      icon: ToggleLeft,
-      title: "Hotkey Toggle",
-      description: "Instantly enable/disable Likh.AI with customizable hotkeys",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-    {
-      icon: Languages,
-      title: "Smart Translation",
-      description: "Seamless translation between English and Indian languages",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-    {
-      icon: Mic,
-      title: "Speech to Text",
-      description: "Convert your voice to text in multiple Indian languages",
-      demoGif: "/placeholder.svg?height=300&width=400",
-      status: "Coming Soon",
-    },
-  ]
-
-  const languages = [
-    { name: "Hindi", script: "हिंदी", users: "500M+" },
-    { name: "Bengali", script: "বাংলা", users: "300M+" },
-    { name: "Odia", script: "ଓଡ଼ିଆ", users: "50M+" },
-  ]
-
-  const FeatureIcon = features[activeDemo].icon
-  const FeatureTitle = features[activeDemo].title
-  const FeatureDescription = features[activeDemo].description
-
-  if(showOnboard){
-    return (
-        <OnboardingPage userId={user?.id} email={user?.email} checkUserOnboarded={checkUserOnboarded} />
-    )
-  }
-
-  if (isLoading && !showOnboard) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          </div>
-          <p className="text-slate-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
-        <Card className="w-full max-w-md border-0 shadow-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all duration-300">
-          <CardContent className="pt-6 text-center">
-            <p className="text-slate-600 mb-4">Please sign in to access your dashboard</p>
-            <Button
-              onClick={() => router.push("/")}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-            >
-              Go to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  const UserIcon = dbUser?.usecase ? useCaseIcons[dbUser.usecase] : User
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-blue-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Type className="w-4 h-4 text-white" />
+    <div className="h-[calc(100vh-4rem)] flex bg-gray-50">
+      {/* Diff View Overlay */}
+      {showDiffView && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                <h2 className="font-semibold text-black">Review Changes</h2>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                Likh.AI
-              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={rejectAllChanges}
+                  className="border-red-200 text-red-700 hover:bg-red-50 bg-transparent"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Reject All
+                </Button>
+                <Button size="sm" onClick={acceptAllChanges} className="bg-green-600 hover:bg-green-700">
+                  <Check className="w-4 h-4 mr-1" />
+                  Accept All
+                </Button>
+              </div>
             </div>
 
-            {/* User Avatar Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10 border-2 border-blue-200 hover:border-blue-400 transition-colors">
-                    <AvatarImage src={dbUser?.image || "/placeholder.svg"} alt={dbUser?.fullname || "User"} />
-                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-                      {dbUser?.fullname?.charAt(0) || user?.email?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{dbUser?.fullname || "User"}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {/* <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span onClick={()=>router.push('/profile')}>Profile</span>
-                </DropdownMenuItem> */}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {diffChanges.map((change) => {
+                  const isAccepted = acceptedChanges.has(change.id)
+                  const isRejected = rejectedChanges.has(change.id)
+                  
+                  if (change.type === "unchanged") {
+                    return (
+                      <div key={change.id} className="p-3 bg-gray-50 rounded border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                          <span className="text-xs text-gray-500 font-medium">Unchanged</span>
+                        </div>
+                        <div 
+                          className="text-sm text-gray-700"
+                          dangerouslySetInnerHTML={{ __html: change.content }}
+                        />
+                      </div>
+                    )
+                  }
+                  
+                  if (change.type === "modified") {
+                    return (
+                      <div key={change.id} className={`p-3 rounded border ${
+                        isAccepted ? "bg-green-50 border-green-200" : 
+                        isRejected ? "bg-red-50 border-red-200" : 
+                        "bg-yellow-50 border-yellow-200"
+                      }`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                            <span className="text-xs text-yellow-700 font-medium">Modified {change.tagName}</span>
+                          </div>
+                          {!isAccepted && !isRejected && (
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setRejectedChanges(prev => new Set(prev).add(change.id))}
+                                className="h-6 px-2 text-xs border-red-200 text-red-700 hover:bg-red-100"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => setAcceptedChanges(prev => new Set(prev).add(change.id))}
+                                className="h-6 px-2 text-xs bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="p-2 bg-red-100 rounded border-l-4 border-red-400">
+                            <div className="text-xs text-red-600 font-medium mb-1">Original:</div>
+                            <div 
+                              className="text-sm text-red-800"
+                              dangerouslySetInnerHTML={{ __html: change.originalContent }}
+                            />
+                          </div>
+                          <div className="p-2 bg-green-100 rounded border-l-4 border-green-400">
+                            <div className="text-xs text-green-600 font-medium mb-1">Modified:</div>
+                            <div 
+                              className="text-sm text-green-800"
+                              dangerouslySetInnerHTML={{ __html: change.modifiedContent }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  
+                  return (
+                    <div key={change.id} className={`p-3 rounded border ${
+                      change.type === "removed" 
+                        ? (isRejected ? "bg-gray-50 border-gray-200" : "bg-red-50 border-red-200")
+                        : (isAccepted ? "bg-gray-50 border-gray-200" : "bg-green-50 border-green-200")
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {change.type === "removed" ? (
+                            <>
+                              <X className="w-3 h-3 text-red-600" />
+                              <span className="text-xs text-red-600 font-medium">Removed</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3 h-3 text-green-600" />
+                              <span className="text-xs text-green-600 font-medium">Added</span>
+                            </>
+                          )}
+                        </div>
+                        {change.type === "added" && !isAccepted && !isRejected && (
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setRejectedChanges(prev => new Set(prev).add(change.id))}
+                              className="h-6 px-2 text-xs border-red-200 text-red-700 hover:bg-red-100"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setAcceptedChanges(prev => new Set(prev).add(change.id))}
+                              className="h-6 px-2 text-xs bg-green-600 hover:bg-green-700"
+                            >
+                              <Check className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <div 
+                        className={`text-sm ${
+                          change.type === "removed" 
+                            ? (isRejected ? "text-gray-600" : "text-red-800")
+                            : (isAccepted ? "text-gray-600" : "text-green-800")
+                        }`}
+                        dangerouslySetInnerHTML={{ __html: change.content }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </ScrollArea>
+
+            <div className="p-4 border-t bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Use inline buttons to accept/reject individual changes, or use the buttons below for all changes.
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={rejectAllChanges}
+                    className="border-red-200 text-red-700 hover:bg-red-50 bg-transparent"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={applySelectedChanges}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    disabled={acceptedChanges.size === 0 && rejectedChanges.size === 0}
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Apply Selected Changes
+                  </Button>
+                  <Button
+                    size="sm" 
+                    onClick={acceptAllChanges}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Accept All
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </nav>
-      <EditorPage />
+      )}
+
+      {/* AI Generate Dialog */}
+      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-blue-600" />
+              Generate with AI
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="What would you like me to generate?"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  handleAIGenerate()
+                }
+              }}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAIDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAIGenerate} disabled={!aiPrompt.trim()} className="bg-blue-600 hover:bg-blue-700">
+                Generate
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Editor */}
+      <div className="flex-1 flex flex-col">
+        <div className="bg-white border-b p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            <h1 className="font-semibold text-black">Document Editor</h1>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AI Powered</span>
+          </div>
+        </div>
+
+        <div className="flex-1 p-4 relative">
+          <div className="relative h-full">
+            <EditorPage
+              content={document}
+              setContent={setDocument}
+            />
+          </div>
+        </div>
+      </div>
+
+      <Separator orientation="vertical" />
+
+      {/* AI Chat Panel */}
+      <div className="w-96 flex flex-col bg-white">
+        <div className="p-4 border-b">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+            <h2 className="font-semibold text-black">AI Assistant</h2>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AI</span>
+          </div>
+          <p className="text-sm text-blue-600 mt-1">Chat with your AI assistant</p>
+        </div>
+
+        <ScrollArea className="flex-1 p-4" ref={chatContainerRef}>
+          <div className="space-y-4">
+            {messages.length === 0 && (
+              <div className="text-center text-blue-500 py-8">
+                <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm text-black">Start a conversation with AI</p>
+                <p className="text-xs mt-1 text-blue-400">
+                  AI will analyze your entire document and suggest improvements
+                </p>
+              </div>
+            )}
+
+            {messages.map((message) => (
+              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] ${message.role === "user" ? "" : "w-full"}`}>
+                  <Card
+                    className={`p-3 ${
+                      message.role === "user" ? "bg-blue-600 text-white" : "bg-blue-50 border-blue-200"
+                    }`}
+                  >
+                    {message.role === "user" ? (
+                      <p className="text-sm whitespace-pre-wrap text-white">{message.content}</p>
+                    ) : (
+                      <div>
+                        {message.content ? (
+                          <div 
+                            className="text-sm text-black max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-bold [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:ml-4"
+                            dangerouslySetInnerHTML={{ __html: message.content }}
+                          />
+                        ) : (
+                          <div className="flex items-center gap-2 text-gray-500">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
+                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200" />
+                            <span className="text-sm">AI is thinking...</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Card>
+
+                  {/* Apply Changes Button for Assistant Messages */}
+                  {message.role === "assistant" && message.hasChanges && (
+                    <div className="mt-2">
+                      <Button
+                        size="sm"
+                        onClick={() => applyChangesToEditor(message.id, message.suggestedDocument)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        Apply Changes to Editor
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Show when changes are applied */}
+                  {message.changesApplied && (
+                    <div className="mt-2 text-xs text-blue-600 flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      Changes applied - Review in diff view
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="flex justify-start">
+                <Card className="bg-blue-50 border-blue-200 p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200" />
+                  </div>
+                </Card>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="p-4 border-t">
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <div className="flex-1 relative">
+              <div
+                ref={chatInputRef}
+                contentEditable
+                onInput={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+                className="w-full min-h-[40px] max-h-[120px] p-3 border border-blue-200 rounded-md bg-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black"
+                style={{
+                  whiteSpace: "pre-wrap",
+                  wordWrap: "break-word",
+                }}
+                data-placeholder="Ask AI to improve your document..."
+                suppressContentEditableWarning={true}
+              />
+              {!input.trim() && (
+                <div className="absolute top-3 left-3 text-gray-500 text-sm pointer-events-none">
+                  Ask AI to improve your document...
+                </div>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="self-end bg-blue-600 hover:bg-blue-700"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </form>
+
+          <div className="flex gap-2 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => generateContent("Improve this document")}
+              disabled={isLoading || !document.trim()}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              Improve
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => generateContent("Fix grammar and spelling")}
+              disabled={isLoading || !document.trim()}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              Fix Grammar
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => generateContent("Make it more concise")}
+              disabled={isLoading || !document.trim()}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              Shorten
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
-
-export default Dashboard
