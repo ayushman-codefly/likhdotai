@@ -53,20 +53,20 @@ export const features = [
       "Supports better language learning",
       "Enhances the quality of your writing",
     ],
-    image: "/images/phonetic.gif",
+    image: "/images/spellcheck.gif",
   },
   {
-    title: "Humanized Translations",
-    header: "Natural-Looking Translations",
+    title: "Chat Completions",
+    header: "Chat with AI for content creation",
     description:
-      "Provides more natural and human-sounding translations between English and Indic languages—beyond robotic literal output.",
+      "Chat with AI for content creation, editing, and more using pre defined wizard or write your own prompt",
     bullets: [
-      "Context-aware translation output",
-      "Avoids stiff, word-for-word results",
+      "Context-aware content output",
+      "Avoids stiff, word-for-word results", 
       "Great for social media or creative use",
-      "Feels natural to native readers",
+      "Be more productive in content creation",
     ],
-    image: "/images/inscript.gif",
+    image: "/images/ai-chat.gif",
   },
   {
     title: "Speech to Text",
@@ -79,7 +79,7 @@ export const features = [
       "Useful for users with limited mobility",
       "High accuracy even in regional accents",
     ],
-    image: "/images/spellcheck.gif",
+    image: "/images/stt.gif",
   },
 ]
 
