@@ -45,31 +45,28 @@ export default function Template({ children }) {
             {/* <ModeToggle /> */}
         </div>
       {children}
-      {/* Footer */}
-      <footer className="bg-blue-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-100 to-blue-300 rounded-lg flex items-center justify-center">
-                <Type className="w-4 h-4 text-black" />
+      {/* Fixed Footer */}
+      <div className="py-20 md:py-10 lg:py-0 bg-white"></div>
+      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 z-40">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                    Likh.AI
+                  </span>
+                </div>
+                <div className="flex items-center space-x-6 text-sm text-slate-600">
+                  <a href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</a>
+                  <a href="/eula" className="hover:text-slate-900 transition-colors">EULA</a>
+                  <a href="/careers" className="hover:text-slate-900 transition-colors">Careers</a>
+                  <a href="/contact" className="hover:text-slate-900 transition-colors">Contact</a>
+                </div>
+                <div className="text-xs text-slate-500">
+                  © 2024 Likh.AI. All rights reserved.
+                </div>
               </div>
-              <span className="text-xl font-bold">Likh.AI</span>
             </div>
-            <div className="flex space-x-6 mb-4 md:mb-0">
-              <a href="/" className="text-blue-200 hover:text-white transition-colors">Home</a>
-              <a href="/contact" className="text-blue-200 hover:text-white transition-colors">Contact</a>
-              <a href="/careers" className="text-blue-200 hover:text-white transition-colors">Careers</a>
-              <a href="/privacy" className="text-blue-200 hover:text-white transition-colors">Privacy</a>
-              <a href="/eula" className="text-blue-200 hover:text-white transition-colors">Terms and Conditions</a>
-            </div>
-            <div className="flex items-center space-x-2 text-blue-200">
-              <p>© 2025 Likh.AI — Made with</p>
-              <Heart className="w-4 h-4 text-pink-500" />
-              <p>for Indian languages</p>
-            </div>
-          </div>
-        </div>
-      </footer>
+          </footer>
     </div>
   )
 }

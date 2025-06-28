@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { Mail, Lock, Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react"
+import useSession from "@/lib/supabase/use-session"
 
 export function SignupForm({ className, ...props }) {
   const [email, setEmail] = useState("")
@@ -22,7 +23,8 @@ export function SignupForm({ className, ...props }) {
   const router = useRouter()
   const supabase = createSupabaseBrowserClient()
   const [captchaToken, setCaptchaToken] = useState()
-  const captcha = useRef()
+  const captcha = useRef();
+  const user = useSession()?.user;
 
   const handleGoogleLogin = async () => {
     setIsLoading(true)
@@ -102,6 +104,12 @@ export function SignupForm({ className, ...props }) {
       setIsLoading(false)
     }
   }
+
+  useEffect(()=>{
+    if(user){
+      router.push('/dashboard')
+    }
+  },[user]);
 
   return (
     <Card className={cn("w-full border-0 shadow-lg bg-white", className)} {...props}>

@@ -18,7 +18,9 @@ export default function RootLayout({ children }) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
-        <head />
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/swalekh-sdk@2.6.0/swalekh.js" />
+        </head>
         <body className={interSans.className}>
           <ThemeProvider
             attribute="class"
