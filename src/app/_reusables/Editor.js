@@ -165,10 +165,10 @@ export default ({ content, setContent }) => {
   }, [editor, content])
 
   return (
-    <div className="min-w-[95%] min-h-[95%] border border-blue-200 rounded-md m-2 bg-white">
+    <div className="w-full h-full border border-blue-200 rounded-md bg-white flex flex-col">
       <MenuBar editor={editor} />
       <EditorContent 
-        className="p-4 text-black min-h-[400px] focus-within:outline-none" 
+        className="p-4 text-black flex-1 focus-within:outline-none overflow-auto" 
         editor={editor} 
       />
     </div>

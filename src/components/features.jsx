@@ -144,9 +144,9 @@ const FeatureSection = () => {
             }}
             className="section w-full"
           >
-            <div className="content mt-15">
-              <div className="relative min-h-screen w-full mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative min-h-screen text-left flex flex-col gap-4 items-start justify-center pt-20">
+            <div className="content mt-10">
+              <div className="relative w-full mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="relative text-left flex flex-col gap-4 items-start justify-center pt-20">
                   <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
                     <Sparkles className="w-4 h-4 mr-1" />
                     {feature.title}

@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import EditorPage from "@/app/_reusables/Editor"
 import OnboardingPage from "@/components/onboarding-page"
-import { getUserFromDB } from "@/app/api/handlers/userHandlers"
+import ContentWizard from "@/components/content-wizard"
+import InitialPromptDialog from "@/components/initial-prompt-dialog"
+import { getUserFromDB, getUserCredits } from "@/app/api/handlers/userHandlers"
 import useSession from "@/lib/supabase/use-session"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 import {
   Send,
   FileText,
@@ -20,6 +23,9 @@ import {
   Bot,
   Loader2,
   Zap,
+  LogOut,
+  User,
+  Wand2,
 } from "lucide-react"
 
 // LCS-based HTML-aware diff function
@@ -242,6 +248,13 @@ export default function Page() {
   const [userLoading, setUserLoading] = useState(true)
   const [userError, setUserError] = useState(null)
 
+  // Content wizard states
+  const [showInitialDialog, setShowInitialDialog] = useState(false)
+  const [showContentWizard, setShowContentWizard] = useState(false)
+  const [hasShownInitialDialog, setHasShownInitialDialog] = useState(false)
+  const [userCredits, setUserCredits] = useState(0)
+  const [creditsLoading, setCreditsLoading] = useState(true)
+
   const chatContainerRef = useRef(null)
   const chatInputRef = useRef(null)
   const session = useSession()
@@ -298,6 +311,10 @@ export default function Page() {
           setUserExists(false)
         } else {
           setUserExists(!!dbUser) // true if user exists, false if null
+          // Also check user credits if user exists
+          if (dbUser) {
+            checkUserCredits()
+          }
         }
       } catch (err) {
         console.error("Error in checkUserExists:", err)
@@ -305,6 +322,29 @@ export default function Page() {
         setUserExists(false)
       } finally {
         setUserLoading(false)
+      }
+    }
+
+    async function checkUserCredits() {
+      if (!session?.user?.id) {
+        setCreditsLoading(false)
+        return
+      }
+
+      try {
+        const result = await getUserCredits(session.user.id)
+        
+        if (result.error) {
+          console.error("Error fetching credits:", result.error)
+          setUserCredits(0)
+        } else {
+          setUserCredits(result.credits)
+        }
+      } catch (error) {
+        console.error("Error checking credits:", error)
+        setUserCredits(0)
+      } finally {
+        setCreditsLoading(false)
       }
     }
 
@@ -350,10 +390,33 @@ export default function Page() {
     }
   }
 
+  // Function to process escape characters in text
+  const processEscapeCharacters = (text) => {
+    if (!text) return text
+    return text
+      .replace(/\\n/g, '<br>') // Convert \n to <br>
+      .replace(/\\"/g, '"') // Convert \" to "
+      .replace(/\\'/g, "'") // Convert \' to '
+      .replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Convert \t to spaces
+      .replace(/\\\\/g, '\\') // Convert \\ to \
+  }
+
   // Custom chat implementation for Gemma2:9b
   const handleSubmit = async (e) => {
-    e.preventDefault()
+        e.preventDefault()
     if (!input.trim() || isLoading) return
+
+    // Check if user has credits
+    if (userCredits <= 0) {
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "⚠️ You have no chat credits remaining. Your credits will reset at the beginning of next month.",
+        hasChanges: false,
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      return
+    }
 
     const userMessage = {
       id: Date.now().toString(),
@@ -376,14 +439,30 @@ export default function Page() {
       const contextualMessages = [
         {
           role: "system",
-          content: `You are an AI writing assistant. Current document content: ${document || "Empty document"}. 
+          content: `You are an AI writing assistant. You help users improve their documents through conversation.
 
-IMPORTANT: Return ONLY the content that would go inside the <body> tag. Do not include <html>, <head>, <body>, or any other wrapper tags. Just return the actual content elements like <h1>, <p>, <div>, etc.
+CURRENT DOCUMENT CONTENT:
+${document || "Empty document"}
 
-Please provide improved version of the entire document based on the user's request.`,
+IMPORTANT INSTRUCTIONS:
+- Always consider the current document content when responding
+- Return ONLY the content that would go inside the <body> tag
+- Do not include <html>, <head>, <body>, or any other wrapper tags
+- Just return the actual content elements like <h1>, <p>, <div>, etc.
+- When providing improvements, consider the entire document context
+- Provide improved version of the entire document based on the user's request`,
         },
-        ...messages,
-        userMessage,
+        ...messages.map(msg => ({
+          ...msg,
+          // Add document context to user messages for better conversation flow
+          content: msg.role === 'user' ? 
+            `[Document context: ${document ? `${document.substring(0, 200)}${document.length > 200 ? '...' : ''}` : 'Empty document'}]\n\nUser message: ${msg.content}` : 
+            msg.content
+        })),
+        {
+          ...userMessage,
+          content: `[Current document: ${document ? `${document.substring(0, 200)}${document.length > 200 ? '...' : ''}` : 'Empty document'}]\n\nUser message: ${userMessage.content}`
+        },
       ]
 
       const response = await fetch("/api/chat", {
@@ -400,6 +479,21 @@ Please provide improved version of the entire document based on the user's reque
       console.log({response}) 
 
       if (!response.ok) {
+        // Check if it's a credit error
+        if (response.status === 400) {
+          const errorData = await response.json()
+          if (errorData.error && errorData.error.includes("no chat credits")) {
+            const errorMessage = {
+              id: (Date.now() + 1).toString(),
+              role: "assistant",
+              content: "⚠️ You have no chat credits remaining. Your credits will reset at the beginning of next month.",
+              hasChanges: false,
+            }
+            setMessages((prev) => [...prev, errorMessage])
+            setUserCredits(0) // Update local state
+            return
+          }
+        }
         throw new Error("Failed to get response")
       }
 
@@ -413,42 +507,42 @@ Please provide improved version of the entire document based on the user's reque
       }
       setMessages((prev) => [...prev, assistantMessage])
 
-      //body is a stream
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let assistantContent = ""
-
-      while (true) {
-        const data = await reader.read()
-        console.log({data})
-        if (data.done) break
-        const textChunk = decoder.decode(data.value, { stream: true })
-        console.log({textChunk})
-        assistantContent += textChunk
-        
-        // Update the message in real-time during streaming
-        setMessages((prev) => 
-          prev.map((msg) => 
-            msg.id === assistantMessage.id 
-              ? { ...msg, content: assistantContent, suggestedDocument: assistantContent }
-              : msg
-          )
-        )
-        
-        // Auto-scroll during streaming
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-        }
-      }
+      // Handle non-streaming response
+      const data = await response.json()
+      console.log({data})
       
-      // Mark as having changes after streaming is complete
+      let assistantContent = data.content || "Sorry, I couldn't generate a response."
+      
+      // Clean up markdown code blocks from the response
+      assistantContent = assistantContent
+        .replace(/```html\s*/gi, '') // Remove ```html
+        .replace(/```\s*/g, '') // Remove closing ```
+        .trim() // Remove extra whitespace
+      
+      // Process escape characters
+      assistantContent = processEscapeCharacters(assistantContent)
+      
+      // Update the message with the complete response
       setMessages((prev) => 
         prev.map((msg) => 
           msg.id === assistantMessage.id 
-            ? { ...msg, hasChanges: true }
+            ? { 
+                ...msg, 
+                content: assistantContent, 
+                suggestedDocument: assistantContent,
+                hasChanges: true 
+              }
             : msg
         )
       )
+      
+      // Update credits after successful response (deduct 1)
+      setUserCredits(prev => Math.max(0, prev - 1))
+      
+      // Auto-scroll after response is complete
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+      }
     } catch (error) {
       console.error("Error:", error)
       const errorMessage = {
@@ -558,6 +652,19 @@ Please provide improved version of the entire document based on the user's reque
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [showDiffView])
 
+  // Check if we should show the initial dialog
+  useEffect(() => {
+    // Show initial dialog when document is empty and user hasn't seen it yet
+    if (!hasShownInitialDialog && document.trim() === '' && messages.length === 0 && userExists) {
+      const timer = setTimeout(() => {
+        setShowInitialDialog(true)
+        setHasShownInitialDialog(true)
+      }, 1000) // Small delay to let the page load
+
+      return () => clearTimeout(timer)
+    }
+  }, [document, messages.length, hasShownInitialDialog, userExists])
+
   const handleAIGenerate = async () => {
     if (!aiPrompt.trim()) return
 
@@ -602,6 +709,33 @@ Please provide improved version of the entire document based on the user's reque
       handleSubmit({ preventDefault: () => {} })
       setIsGenerating(false)
     }, 100)
+  }
+
+  // Content wizard handlers
+  const handleUseWizard = () => {
+    setShowInitialDialog(false)
+    setShowContentWizard(true)
+  }
+
+  const handleWriteOwnPrompt = () => {
+    setShowInitialDialog(false)
+    // Focus on the chat input
+    setTimeout(() => {
+      if (chatInputRef.current) {
+        chatInputRef.current.focus()
+      }
+    }, 100)
+  }
+
+  const handleWizardGenerate = (generatedContent) => {
+    // Directly set the generated content to the document
+    setDocument(generatedContent)
+    setShowContentWizard(false)
+  }
+
+  const handleBackToInitial = () => {
+    // Show the initial dialog again when user goes back from wizard step 1
+    setShowInitialDialog(true)
   }
 
   // Show loading spinner while checking user
@@ -693,7 +827,7 @@ Please provide improved version of the entire document based on the user's reque
                   }
                   
                   if (change.type === "modified") {
-                    return (
+  return (
                       <div key={change.id} className={`p-3 rounded border ${
                         isAccepted ? "bg-green-50 border-green-200" : 
                         isRejected ? "bg-red-50 border-red-200" : 
@@ -831,12 +965,29 @@ Please provide improved version of the entire document based on the user's reque
                     <Check className="w-4 h-4 mr-1" />
                     Accept All
                   </Button>
-                </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Initial Prompt Dialog */}
+      <InitialPromptDialog
+        isOpen={showInitialDialog}
+        onClose={() => setShowInitialDialog(false)}
+        onUseWizard={handleUseWizard}
+        onWriteOwn={handleWriteOwnPrompt}
+      />
+
+      {/* Content Creation Wizard */}
+      <ContentWizard
+        isOpen={showContentWizard}
+        onClose={() => setShowContentWizard(false)}
+        onGenerate={handleWizardGenerate}
+        onBackToInitial={handleBackToInitial}
+        document={document}
+      />
 
       {/* AI Generate Dialog */}
       <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
@@ -873,39 +1024,73 @@ Please provide improved version of the entire document based on the user's reque
       </Dialog>
 
       {/* Document Editor */}
-      <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b p-4 flex items-center justify-between">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="bg-white border-b p-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
             <h1 className="font-semibold text-black">Document Editor</h1>
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AI Powered</span>
-          </div>
         </div>
 
-        <div className="flex-1 p-4 relative">
-          <div className="relative h-full">
+          {/* User Info and Logout */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <User className="w-4 h-4" />
+              <span>{session?.user?.email}</span>
+              </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+              onClick={async () => {
+                try {
+                  const supabase = createSupabaseBrowserClient()
+                  await supabase.auth.signOut()
+                  window.location.href = '/'
+                } catch (error) {
+                  console.error('Error signing out:', error)
+                  window.location.href = '/api/auth/signout'
+                }
+              }}
+              className="border-red-200 text-red-700 hover:bg-red-50 hover:text-blue-700"
+            >
+              <LogOut className="w-4 h-4 mr-1" />
+              Logout
+                </Button>
+              </div>
+            </div>
+
+        <div className="flex-1 p-4 overflow-hidden">
+          <div className="h-full overflow-auto">
             <EditorPage
               content={document}
               setContent={setDocument}
             />
+            </div>
           </div>
-        </div>
       </div>
 
       <Separator orientation="vertical" />
 
       {/* AI Chat Panel */}
-      <div className="w-96 flex flex-col bg-white">
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-600" />
-            <h2 className="font-semibold text-black">AI Assistant</h2>
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AI</span>
+      <div className="w-96 flex flex-col bg-white min-h-0 flex-shrink-0">
+        <div className="p-4 border-b flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <h2 className="font-semibold text-black truncate">AI Assistant</h2>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex-shrink-0">AI</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs flex-shrink-0 ml-2">
+              <Zap className="w-3 h-3 text-yellow-600" />
+              <span className={`font-medium whitespace-nowrap ${userCredits <= 0 ? 'text-red-600' : userCredits <= 5 ? 'text-orange-600' : 'text-green-600'}`}>
+                {creditsLoading ? '...' : "Credits : "+userCredits}
+              </span>
+            </div>
           </div>
           <p className="text-sm text-blue-600 mt-1">Chat with your AI assistant</p>
         </div>
 
-        <ScrollArea className="flex-1 p-4" ref={chatContainerRef}>
+        <ScrollArea className="flex-1 p-4 min-h-0" ref={chatContainerRef}>
           <div className="space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-blue-500 py-8">
@@ -920,7 +1105,7 @@ Please provide improved version of the entire document based on the user's reque
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] ${message.role === "user" ? "" : "w-full"}`}>
-                  <Card
+                <Card
                     className={`p-3 ${
                       message.role === "user" ? "bg-blue-600 text-white" : "bg-blue-50 border-blue-200"
                     }`}
@@ -944,7 +1129,7 @@ Please provide improved version of the entire document based on the user's reque
                         )}
                       </div>
                     )}
-                  </Card>
+                </Card>
 
                   {/* Apply Changes Button for Assistant Messages */}
                   {message.role === "assistant" && message.hasChanges && (
@@ -985,49 +1170,59 @@ Please provide improved version of the entire document based on the user's reque
           </div>
         </ScrollArea>
 
-        <div className="p-4 border-t">
+        <div className="p-4 border-t flex-shrink-0">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <div className="flex-1 relative">
               <div
                 ref={chatInputRef}
-                contentEditable
+                contentEditable={userCredits > 0}
                 onInput={handleInputChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit(e)
-                  }
-                }}
-                className="w-full min-h-[40px] max-h-[120px] p-3 border border-blue-200 rounded-md bg-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmit(e)
+                }
+              }}
+                className={`w-full min-h-[40px] max-h-[120px] p-3 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                 style={{
                   whiteSpace: "pre-wrap",
                   wordWrap: "break-word",
                 }}
-                data-placeholder="Ask AI to improve your document..."
+                data-placeholder={userCredits <= 0 ? "No credits remaining..." : "Ask AI to improve your document..."}
                 suppressContentEditableWarning={true}
               />
               {!input.trim() && (
                 <div className="absolute top-3 left-3 text-gray-500 text-sm pointer-events-none">
-                  Ask AI to improve your document...
+                  {userCredits <= 0 ? "No credits remaining..." : "Ask AI to improve your document..."}
                 </div>
               )}
             </div>
             <Button
               type="submit"
-              disabled={isLoading || !input.trim()}
-              className="self-end bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading || !input.trim() || userCredits <= 0}
+              className={`self-end bg-blue-600 ${isLoading || !input.trim() || userCredits <= 0 ? "text-black":"text-white"} hover:bg-blue-700`}
             >
               <Send className="w-4 h-4" />
             </Button>
           </form>
 
-          <div className="flex gap-2 mt-2">
+          <div className="flex flex-wrap gap-1 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowContentWizard(true)}
+              disabled={isLoading || userCredits <= 0}
+              className="border-purple-200 text-purple-700 hover:bg-purple-50 text-xs px-2"
+            >
+              <Wand2 className="w-3 h-3 mr-1" />
+              Wizard
+            </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => generateContent("Improve this document")}
-              disabled={isLoading || !document.trim()}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+              disabled={isLoading || !document.trim() || userCredits <= 0}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2"
             >
               Improve
             </Button>
@@ -1035,17 +1230,17 @@ Please provide improved version of the entire document based on the user's reque
               size="sm"
               variant="outline"
               onClick={() => generateContent("Fix grammar and spelling")}
-              disabled={isLoading || !document.trim()}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+              disabled={isLoading || !document.trim() || userCredits <= 0}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2"
             >
-              Fix Grammar
+              Grammar
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => generateContent("Make it more concise")}
-              disabled={isLoading || !document.trim()}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+              disabled={isLoading || !document.trim() || userCredits <= 0}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2"
             >
               Shorten
             </Button>

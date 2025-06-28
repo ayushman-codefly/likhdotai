@@ -12,6 +12,7 @@ import FeatureSection from "@/components/features"
 import WhoWeServeSection from "@/components/usecase"
 import WhySignUpSection from "@/components/whysignup"
 import PricingSection from "@/components/pricing"
+import Navigation from "@/components/navigation"
 import Link from "next/link"
 
 const CompleteScrollSnapLanding = () => {
@@ -22,31 +23,7 @@ const CompleteScrollSnapLanding = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
         <main>
           {/* Navigation - Fixed */}
-          <nav className="fixed max-h-20 top-0 left-0 right-0 z-50 bg-white backdrop-blur-lg border-b border-blue-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center h-16">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                    Likh.AI
-                  </span>
-                </div>
-                <div className="hidden md:flex items-center space-x-8">
-                  <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">
-                    Features
-                  </a>
-                  <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
-                    Pricing
-                  </a>
-                  <Link
-                    className="p-2 rounded-sm bg-gradient-to-r text-slate-100 from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                    href={"/signup"}
-                  >
-                    Join Free
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </nav>
+          <Navigation />
 
           {/* Section 1: Hero */}
           <section className="section">
@@ -98,13 +75,13 @@ const CompleteScrollSnapLanding = () => {
 
           {/* Section 2: Mission */}
           <section className="section">
-            <div className="content mt-15">
-              <div className="relative min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative min-h-screen text-left flex flex-col gap-4 items-start justify-start pt-20">
-                  <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
+            <div className="content">
+              <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="relative text-left flex flex-col gap-4 items-start justify-start">
+                  {/* <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
                     <Sparkles className="w-4 h-4 mr-1" />
                     Our Mission
-                  </Badge>
+                  </Badge> */}
 
                   <h3
                     className={`text-3xl sm:text-4xl lg:text-5xl leading-[1.5] font-bold mb-6 transition-all duration-1000 transform`}
@@ -190,7 +167,7 @@ const CompleteScrollSnapLanding = () => {
           {/* Section 7: Contact */}
           <section className="section">
             <div className="content">
-              <div className="min-h-screen bg-white flex items-center">
+              <div className="my-20 pb-40 bg-white flex items-center">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                   <div className="flex flex-col md:flex-row items-center justify-between pt-20 gap-0 md:gap-10">
 

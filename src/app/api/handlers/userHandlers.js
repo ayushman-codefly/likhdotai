@@ -36,6 +36,45 @@ export async function getUserFromDB(id){
     }
 }
 
+export async function getUserCredits(id){
+    try{        
+        const user = await sql
+        .from('credits')
+        .select('*')
+        .eq('user_id', id)
+        
+        if(user.data.length === 0){
+            return {
+                credits: 30,
+                error: null
+            };
+        }
+        
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        // Check if credits are for current month/year
+        if (user.data[0].chat_credits.month !== currentMonth || user.data[0].chat_credits.year !== currentYear) {
+            return {
+                credits: 30, // Reset to 30 for new month
+                error: null
+            };
+        }
+        
+        return {
+            credits: user.data[0].chat_credits.credits,
+            error: null
+        };
+    }
+    catch(err){
+        console.log(err);
+        return {
+            credits: 0,
+            error: err
+        };
+    }
+}
+
 export async function setUserInDB({email, id:uuid, image, fullname,usecase}){
     try{
         email = encrypt(email);

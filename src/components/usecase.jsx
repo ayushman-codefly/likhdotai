@@ -53,7 +53,7 @@ export default function WhoWeServeSection() {
     return (
         <section className="section">
             <div className="content">
-                <div className="min-h-screen bg-white flex items-center">
+                <div className="mt-20 bg-white flex items-center">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                         <div className="text-left flex flex-col md:flex-row items-center justify-between gap-8">
 
