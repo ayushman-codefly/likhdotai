@@ -10,6 +10,7 @@ const MenuBar = ({ editor }) => {
   if (!editor) {
     return null
   }
+  
 
   return (
     <div className="control-group border-b border-blue-200 p-3 bg-blue-50">

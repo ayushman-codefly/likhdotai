@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import useSession from "@/lib/supabase/use-session"
 
 export default function ChatWindow({ documentContent = "", onSuggestion }) {
   const [messages, setMessages] = useState([
@@ -21,6 +22,7 @@ export default function ChatWindow({ documentContent = "", onSuggestion }) {
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
+  const session = useSession()
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function ChatWindow({ documentContent = "", onSuggestion }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          userid: session.user.id
         },
         body: JSON.stringify({
           messages: [
@@ -237,12 +240,7 @@ Respond with the improved/modified content in clean HTML format.`
                       )}
                     </div>
                   )}
-                  <p className={`text-xs mt-1 ${message.role === "user" ? "text-blue-100" : "text-slate-400"}`}>
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                  
                 </Card>
               </div>
             </div>

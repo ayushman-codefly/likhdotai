@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -8,6 +8,9 @@ import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import EditorPage from "@/app/_reusables/Editor"
+import OnboardingPage from "@/components/onboarding-page"
+import { getUserFromDB } from "@/app/api/handlers/userHandlers"
+import useSession from "@/lib/supabase/use-session"
 import {
   Send,
   FileText,
@@ -19,10 +22,12 @@ import {
   Zap,
 } from "lucide-react"
 
-// Intelligent HTML-aware diff function
+// LCS-based HTML-aware diff function
 function createIntelligentDiff(original, modified) {
-  // Parse HTML content into meaningful chunks (tags, text nodes, etc.)
+  // Parse HTML content into meaningful chunks
   const parseHTML = (html) => {
+    if (!html || html.trim() === '') return []
+    
     const parser = new DOMParser()
     const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html')
     const chunks = []
@@ -34,7 +39,8 @@ function createIntelligentDiff(original, modified) {
           chunks.push({
             type: 'text',
             content: text,
-            html: text
+            html: text,
+            key: `text:${text}` // Unique key for comparison
           })
         }
       } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -43,6 +49,7 @@ function createIntelligentDiff(original, modified) {
           .map(attr => `${attr.name}="${attr.value}"`)
           .join(' ')
         
+        const textContent = node.textContent.trim()
         chunks.push({
           type: 'element',
           tagName,
@@ -50,7 +57,8 @@ function createIntelligentDiff(original, modified) {
           html: node.outerHTML,
           openTag: `<${tagName}${attributes ? ' ' + attributes : ''}>`,
           closeTag: `</${tagName}>`,
-          textContent: node.textContent.trim()
+          textContent,
+          key: `${tagName}:${textContent}:${node.innerHTML}` // Unique key for comparison
         })
       }
     }
@@ -61,84 +69,157 @@ function createIntelligentDiff(original, modified) {
 
   const originalChunks = parseHTML(original || '')
   const modifiedChunks = parseHTML(modified || '')
+
+  // LCS Algorithm to find longest common subsequence
+  function computeLCS(arr1, arr2) {
+    const m = arr1.length
+    const n = arr2.length
+    const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0))
+    
+    // Build LCS table
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (areChunksEqual(arr1[i - 1], arr2[j - 1])) {
+          dp[i][j] = dp[i - 1][j - 1] + 1
+        } else {
+          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1])
+        }
+      }
+    }
+    
+    // Backtrack to find LCS
+    const lcs = []
+    let i = m, j = n
+    while (i > 0 && j > 0) {
+      if (areChunksEqual(arr1[i - 1], arr2[j - 1])) {
+        lcs.unshift({ originalIndex: i - 1, modifiedIndex: j - 1 })
+        i--
+        j--
+      } else if (dp[i - 1][j] > dp[i][j - 1]) {
+        i--
+      } else {
+        j--
+      }
+    }
+    
+    return lcs
+  }
+
+  // Check if two chunks are equal
+  function areChunksEqual(chunk1, chunk2) {
+    if (!chunk1 || !chunk2) return false
+    
+    // For text nodes, compare content directly
+    if (chunk1.type === 'text' && chunk2.type === 'text') {
+      return chunk1.content === chunk2.content
+    }
+    
+    // For elements, compare tag name and content
+    if (chunk1.type === 'element' && chunk2.type === 'element') {
+      return chunk1.tagName === chunk2.tagName && 
+             chunk1.content === chunk2.content
+    }
+    
+    return false
+  }
+
+  // Generate diff using LCS
+  const lcs = computeLCS(originalChunks, modifiedChunks)
   const changes = []
   let changeId = 0
+  let originalIndex = 0
+  let modifiedIndex = 0
+  let lcsIndex = 0
 
-  // Simple diff algorithm for chunks
-  let i = 0, j = 0
-  
-  while (i < originalChunks.length || j < modifiedChunks.length) {
-    if (i >= originalChunks.length) {
-      // Only modified chunks left - these are additions
-      changes.push({
-        id: changeId++,
-        type: 'added',
-        content: modifiedChunks[j].html,
-        textContent: modifiedChunks[j].textContent || modifiedChunks[j].content,
-        chunk: modifiedChunks[j]
-      })
-      j++
-    } else if (j >= modifiedChunks.length) {
-      // Only original chunks left - these are removals
-      changes.push({
-        id: changeId++,
-        type: 'removed',
-        content: originalChunks[i].html,
-        textContent: originalChunks[i].textContent || originalChunks[i].content,
-        chunk: originalChunks[i]
-      })
-      i++
-    } else if (originalChunks[i].html === modifiedChunks[j].html) {
-      // Chunks are identical
+  while (originalIndex < originalChunks.length || modifiedIndex < modifiedChunks.length) {
+    // Check if we have a match in LCS
+    const currentLCS = lcs[lcsIndex]
+    
+    if (currentLCS && 
+        originalIndex === currentLCS.originalIndex && 
+        modifiedIndex === currentLCS.modifiedIndex) {
+      // This is an unchanged chunk
       changes.push({
         id: changeId++,
         type: 'unchanged',
-        content: originalChunks[i].html,
-        textContent: originalChunks[i].textContent || originalChunks[i].content,
-        chunk: originalChunks[i]
+        content: originalChunks[originalIndex].html,
+        textContent: originalChunks[originalIndex].textContent || originalChunks[originalIndex].content,
+        chunk: originalChunks[originalIndex]
       })
-      i++
-      j++
-    } else {
-      // Check if it's a modification of the same element type
-      if (originalChunks[i].type === 'element' && 
-          modifiedChunks[j].type === 'element' && 
-          originalChunks[i].tagName === modifiedChunks[j].tagName) {
-        // Same element type but different content - show as modification
-        changes.push({
-          id: changeId++,
-          type: 'modified',
-          originalContent: originalChunks[i].html,
-          modifiedContent: modifiedChunks[j].html,
-          originalText: originalChunks[i].textContent || originalChunks[i].content,
-          modifiedText: modifiedChunks[j].textContent || modifiedChunks[j].content,
-          tagName: originalChunks[i].tagName
-        })
-        i++
-        j++
-      } else {
-        // Different elements - show as remove + add
-        changes.push({
-          id: changeId++,
-          type: 'removed',
-          content: originalChunks[i].html,
-          textContent: originalChunks[i].textContent || originalChunks[i].content,
-          chunk: originalChunks[i]
-        })
-        changes.push({
-          id: changeId++,
-          type: 'added',
-          content: modifiedChunks[j].html,
-          textContent: modifiedChunks[j].textContent || modifiedChunks[j].content,
-          chunk: modifiedChunks[j]
-        })
-        i++
-        j++
-      }
+      originalIndex++
+      modifiedIndex++
+      lcsIndex++
+    } else if (originalIndex < originalChunks.length && 
+               (modifiedIndex >= modifiedChunks.length || 
+                !currentLCS || 
+                originalIndex < currentLCS.originalIndex)) {
+      // This chunk was removed
+      changes.push({
+        id: changeId++,
+        type: 'removed',
+        content: originalChunks[originalIndex].html,
+        textContent: originalChunks[originalIndex].textContent || originalChunks[originalIndex].content,
+        chunk: originalChunks[originalIndex]
+      })
+      originalIndex++
+    } else if (modifiedIndex < modifiedChunks.length) {
+      // This chunk was added
+      changes.push({
+        id: changeId++,
+        type: 'added',
+        content: modifiedChunks[modifiedIndex].html,
+        textContent: modifiedChunks[modifiedIndex].textContent || modifiedChunks[modifiedIndex].content,
+        chunk: modifiedChunks[modifiedIndex]
+      })
+      modifiedIndex++
     }
   }
 
-  return changes
+  // Post-process to identify modifications (adjacent remove + add of same element type)
+  const processedChanges = []
+  let i = 0
+  
+  while (i < changes.length) {
+    const current = changes[i]
+    const next = changes[i + 1]
+    
+    // Check if this is a modification (remove followed by add of same element type)
+    if (current.type === 'removed' && 
+        next && 
+        next.type === 'added' && 
+        current.chunk.type === 'element' && 
+        next.chunk.type === 'element' && 
+        current.chunk.tagName === next.chunk.tagName) {
+      
+      processedChanges.push({
+        id: changeId++,
+        type: 'modified',
+        originalContent: current.content,
+        modifiedContent: next.content,
+        originalText: current.textContent,
+        modifiedText: next.textContent,
+        tagName: current.chunk.tagName
+      })
+      i += 2 // Skip both current and next
+    } else {
+      processedChanges.push(current)
+      i++
+    }
+  }
+
+  return processedChanges
+}
+
+// Loading component
+function LoadingSpinner() {
+  return (
+    <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="text-sm text-gray-600">Loading your workspace...</p>
+      </div>
+    </div>
+  )
 }
 
 export default function Page() {
@@ -156,8 +237,118 @@ export default function Page() {
   const [originalDocument, setOriginalDocument] = useState("")
   const [modifiedDocument, setModifiedDocument] = useState("")
 
+  // User checking states
+  const [userExists, setUserExists] = useState(null) // null = loading, true = exists, false = doesn't exist
+  const [userLoading, setUserLoading] = useState(true)
+  const [userError, setUserError] = useState(null)
+
   const chatContainerRef = useRef(null)
   const chatInputRef = useRef(null)
+  const session = useSession()
+
+  // Check if user exists in database
+  useEffect(() => {
+    if(!session){
+      return
+    }
+    async function checkUserExists() {
+      if (!session?.user?.id) {
+        setUserLoading(false)
+        setUserError("No user session found")
+        return
+      }
+
+      try {
+        setUserLoading(true)
+        const result = await getUserFromDB(session.user.id)
+        
+        // Handle both expected format {dbUser, error} and raw Supabase format
+        let dbUser, error
+        
+        if (result && typeof result === 'object') {
+          if ('dbUser' in result && 'error' in result) {
+            // Expected format
+            dbUser = result.dbUser
+            error = result.error
+          } else if ('data' in result) {
+            // Raw Supabase format
+            if (result.error) {
+              error = result.error
+              dbUser = null
+            } else if (result.data && result.data.length > 0) {
+              dbUser = result.data[0] // User exists
+              error = null
+            } else {
+              dbUser = null // User doesn't exist
+              error = null
+            }
+          } else {
+            // Unexpected format
+            error = new Error("Unexpected response format")
+            dbUser = null
+          }
+        } else {
+          error = new Error("Invalid response")
+          dbUser = null
+        }
+        
+        if (error) {
+          console.error("Error checking user:", error)
+          setUserError(error.message || "Failed to check user")
+          setUserExists(false)
+        } else {
+          setUserExists(!!dbUser) // true if user exists, false if null
+        }
+      } catch (err) {
+        console.error("Error in checkUserExists:", err)
+        setUserError(err.message || "Failed to check user")
+        setUserExists(false)
+      } finally {
+        setUserLoading(false)
+      }
+    }
+
+    checkUserExists()
+  }, [session])
+
+  // Function to recheck user after onboarding completion
+  const checkUserOnboarded = async () => {
+    setUserLoading(true)
+    try {
+      const result = await getUserFromDB(session.user.id)
+      
+      // Handle both expected format {dbUser, error} and raw Supabase format
+      let dbUser, error
+      
+      if (result && typeof result === 'object') {
+        if ('dbUser' in result && 'error' in result) {
+          // Expected format
+          dbUser = result.dbUser
+          error = result.error
+        } else if ('data' in result) {
+          // Raw Supabase format
+          if (result.error) {
+            error = result.error
+            dbUser = null
+          } else if (result.data && result.data.length > 0) {
+            dbUser = result.data[0] // User exists
+            error = null
+          } else {
+            dbUser = null // User doesn't exist
+            error = null
+          }
+        }
+      }
+      
+      if (!error && dbUser) {
+        setUserExists(true)
+      }
+    } catch (err) {
+      console.error("Error rechecking user:", err)
+    } finally {
+      setUserLoading(false)
+    }
+  }
 
   // Custom chat implementation for Gemma2:9b
   const handleSubmit = async (e) => {
@@ -202,6 +393,7 @@ Please provide improved version of the entire document based on the user's reque
         },
         body: JSON.stringify({
           messages: contextualMessages,
+          userid: session.user.id,
         }),
       })
 
@@ -412,6 +604,45 @@ Please provide improved version of the entire document based on the user's reque
     }, 100)
   }
 
+  // Show loading spinner while checking user
+  if (userLoading) {
+    return <LoadingSpinner />
+  }
+
+  // Show onboarding if user doesn't exist
+  if (userExists === false) {
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <OnboardingPage 
+          userId={session?.user?.id}
+          email={session?.user?.email}
+          checkUserOnboarded={checkUserOnboarded}
+        />
+      </Suspense>
+    )
+  }
+
+  // Show error state if there's an error
+  if (userError) {
+    return (
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <X className="w-8 h-8 text-red-600" />
+          <p className="text-sm text-red-600">Error loading user data</p>
+          <p className="text-xs text-gray-500">{userError}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline"
+            size="sm"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Render dashboard if user exists
   return (
     <div className="h-[calc(100vh-4rem)] flex bg-gray-50">
       {/* Diff View Overlay */}
