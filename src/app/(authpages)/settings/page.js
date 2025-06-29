@@ -288,9 +288,8 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <Button
-            variant="ghost"
             onClick={() => router.push('/dashboard')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 text-black bg-blue-100 hover:text-white hover:bg-blue-500"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Dashboard</span>
