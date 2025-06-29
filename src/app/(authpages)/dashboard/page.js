@@ -1010,6 +1010,7 @@ IMPORTANT INSTRUCTIONS:
           <div className="space-y-4">
             <Input
               value={aiPrompt}
+               className="text-black"
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="What would you like me to generate?"
               onKeyDown={(e) => {
