@@ -118,6 +118,23 @@
 
 body{
   background-color: linear-gradient(to right, #ffffff, #b6ccff);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+/* Reset default margins and padding */
+* {
+  box-sizing: border-box;
+}
+
+*:before,
+*:after {
+  box-sizing: border-box;
 }
 
 /* SET OUTLINE OF CONTENTEDITABLE DIV TO NONE

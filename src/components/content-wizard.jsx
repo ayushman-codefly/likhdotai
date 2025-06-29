@@ -19,7 +19,8 @@ import {
   ArrowLeft,
   CheckCircle,
   Wand2,
-  Loader2
+  Loader2,
+  SkipForward
 } from "lucide-react"
 
 const PLATFORMS = [
@@ -47,7 +48,9 @@ const LENGTHS = [
   { id: 'short', name: 'Short', desc: '~300 words', icon: '📄' },
   { id: 'medium', name: 'Medium', desc: '600-800 words', icon: '📝' },
   { id: 'long', name: 'Long', desc: '1200+ words', icon: '📚' },
-  { id: 'custom', name: 'Custom', desc: 'You decide', icon: '⚙️' }
+  { id: 'max', name: 'Maximum', desc: '2000+ words', icon: '📖' },
+  { id: 'all', name: 'Comprehensive', desc: 'As long as needed', icon: '📚📚' },
+  { id: 'custom', name: 'You Decide', desc: 'Specify exact count', icon: '⚙️' }
 ]
 
 export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToInitial, document }) {
@@ -73,6 +76,13 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
     console.log('Step changed to:', step)
   }, [step])
 
+  // Handle dialog close - prevent closing during generation
+  const handleDialogClose = (open) => {
+    if (!open && !isGenerating) {
+      onClose()
+    }
+  }
+
   const handleBack = (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -97,6 +107,30 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
     if (step < totalSteps) {
       setStep(step + 1)
       console.log('Moving to step:', step + 1)
+    }
+  }
+
+  const handleSkip = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Skip button clicked, current step:', step)
+    
+    // Set default values for skipped steps
+    if (step === 1 && !formData.topic.trim()) {
+      setFormData(prev => ({ ...prev, topic: 'Content Topic' }))
+    } else if (step === 2 && !formData.audience.trim()) {
+      setFormData(prev => ({ ...prev, audience: 'General audience' }))
+    } else if (step === 3 && formData.goals.length === 0) {
+      setFormData(prev => ({ ...prev, goals: ['educate'] }))
+    } else if (step === 4 && !formData.platform) {
+      setFormData(prev => ({ ...prev, platform: 'blog' }))
+    } else if (step === 5 && !formData.length) {
+      setFormData(prev => ({ ...prev, length: 'medium' }))
+    }
+    
+    if (step < totalSteps) {
+      setStep(step + 1)
+      console.log('Skipping to step:', step + 1)
     }
   }
 
@@ -144,7 +178,11 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
 
     if (selectedLength) {
       if (selectedLength.id === 'custom' && formData.customLength) {
-        prompt += `. Make it approximately ${formData.customLength} words`
+        prompt += `. Make it approximately ${formData.customLength}`
+      } else if (selectedLength.id === 'max') {
+        prompt += `. Make it comprehensive and detailed (2000+ words)`
+      } else if (selectedLength.id === 'all') {
+        prompt += `. Make it as comprehensive and detailed as possible, covering all aspects thoroughly`
       } else {
         prompt += `. ${selectedLength.desc}`
       }
@@ -272,13 +310,46 @@ Please provide improved version of the entire document based on the user's reque
 
   const canProceed = () => {
     switch (step) {
-      case 1: return formData.topic.trim().length > 0
-      case 2: return formData.audience.trim().length > 0
-      case 3: return formData.goals.length > 0
-      case 4: return formData.platform.length > 0
-      case 5: return formData.length.length > 0
+      case 1: return true // Can skip topic
+      case 2: return true // Can skip audience
+      case 3: return true // Can skip goals
+      case 4: return true // Can skip platform
+      case 5: return true // Can skip length
       case 6: return true
       default: return false
+    }
+  }
+
+  const canSkip = () => {
+    // All steps can be skipped now
+    return [1, 2, 3, 4, 5].includes(step)
+  }
+
+  // Handle Enter key to go to next step
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      if (step < totalSteps && canProceed()) {
+        handleNext(e)
+      } else if (step === totalSteps) {
+        handleGenerate()
+      }
+    }
+  }
+
+  // Get filtered length options based on platform
+  const getFilteredLengthOptions = () => {
+    const platform = formData.platform || 'blog' // Default to blog
+    
+    if (platform === 'twitter') {
+      return LENGTHS.filter(l => ['very-short', 'custom'].includes(l.id))
+    } else if (platform === 'linkedin') {
+      return LENGTHS.filter(l => ['very-short', 'short', 'custom'].includes(l.id))
+    } else if (platform === 'instagram') {
+      return LENGTHS.filter(l => ['very-short', 'custom'].includes(l.id))
+    } else {
+      // For blog, newsletter, youtube, medium, custom - show all options
+      return LENGTHS
     }
   }
 
@@ -295,6 +366,7 @@ Please provide improved version of the entire document based on the user's reque
             <div className="space-y-2">
               <h3 className="text-xl font-semibold text-black">Creating Your Content</h3>
               <p className="text-gray-600">This may take a few moments...</p>
+              <p className="text-sm text-yellow-600 font-medium">⚠️ Please don't close this window</p>
             </div>
           </div>
           
@@ -349,7 +421,7 @@ Please provide improved version of the entire document based on the user's reque
     switch (step) {
       case 1:
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={handleKeyDown}>
             <div className="text-center">
               <Sparkles className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2 text-black">What's your topic?</h3>
@@ -362,6 +434,7 @@ Please provide improved version of the entire document based on the user's reque
                 placeholder="e.g., Top 5 Mindfulness Practices for Busy People"
                 value={formData.topic}
                 onChange={(e) => setFormData(prev => ({ ...prev, topic: e.target.value }))}
+                onKeyDown={handleKeyDown}
                 className="text-left border-blue-200 focus:border-blue-500 text-black"
                 autoFocus
               />
@@ -371,7 +444,7 @@ Please provide improved version of the entire document based on the user's reque
 
       case 2:
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={handleKeyDown}>
             <div className="text-center">
               <Users className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2 text-black">Who's your audience?</h3>
@@ -384,6 +457,7 @@ Please provide improved version of the entire document based on the user's reque
                 placeholder="e.g., Working moms, College students, Startup founders"
                 value={formData.audience}
                 onChange={(e) => setFormData(prev => ({ ...prev, audience: e.target.value }))}
+                onKeyDown={handleKeyDown}
                 className="text-left border-blue-200 focus:border-blue-500 text-black"
               />
             </div>
@@ -392,7 +466,7 @@ Please provide improved version of the entire document based on the user's reque
 
       case 3:
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={handleKeyDown}>
             <div className="text-center">
               <Target className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2 text-black">What's your goal?</h3>
@@ -422,7 +496,7 @@ Please provide improved version of the entire document based on the user's reque
 
       case 4:
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={handleKeyDown}>
             <div className="text-center">
               <Globe className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2 text-black">Where will you publish?</h3>
@@ -452,38 +526,24 @@ Please provide improved version of the entire document based on the user's reque
 
       case 5:
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={handleKeyDown}>
             <div className="text-center">
               <FileText className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2 text-black">How long should it be?</h3>
-              {formData.platform && (() => {
-                const selectedPlatform = PLATFORMS.find(p => p.id === formData.platform)
-                const hasFixedLength = ['twitter', 'linkedin', 'instagram'].includes(formData.platform)
+              {(() => {
+                const selectedPlatform = PLATFORMS.find(p => p.id === (formData.platform || 'blog'))
+                const platformName = selectedPlatform?.name || 'Blog Post'
+                const platformLength = selectedPlatform?.length || 'Medium (600-800 words)'
                 
-                if (hasFixedLength) {
-                  return (
-                    <p className="text-gray-600 text-sm">
-                      {selectedPlatform?.name} has optimal length: {selectedPlatform?.length}
-                    </p>
-                  )
-                } else {
-                  return (
-                    <p className="text-gray-600 text-sm">
-                      Suggested for {selectedPlatform?.name}: {selectedPlatform?.length}
-                    </p>
-                  )
-                }
+                return (
+                  <p className="text-gray-600 text-sm">
+                    Suggested for {platformName}: {platformLength}
+                  </p>
+                )
               })()}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {LENGTHS.filter(length => {
-                // Hide word count options for platforms with fixed character limits
-                const hasFixedLength = ['twitter', 'linkedin', 'instagram'].includes(formData.platform)
-                if (hasFixedLength) {
-                  return ['very-short', 'custom'].includes(length.id)
-                }
-                return true
-              }).map((length) => (
+              {getFilteredLengthOptions().map((length) => (
                 <Card 
                   key={length.id}
                   className={`cursor-pointer transition-all ${
@@ -504,26 +564,27 @@ Please provide improved version of the entire document based on the user's reque
             {formData.length === 'custom' && (
               <div className="mt-4">
                 <Label htmlFor="customLength" className="text-black">
-                  {['twitter', 'linkedin', 'instagram'].includes(formData.platform) 
-                    ? 'Custom character/word count' 
-                    : 'Custom word count'
-                  }
+                  Specify Length
                 </Label>
                 <Input
                   id="customLength"
                   placeholder={
-                    formData.platform === 'twitter' 
+                    (formData.platform || 'blog') === 'twitter' 
                       ? 'e.g., 280 characters' 
-                      : formData.platform === 'linkedin'
-                      ? 'e.g., 300 words'
-                      : formData.platform === 'instagram'
+                      : (formData.platform || 'blog') === 'linkedin'
+                      ? 'e.g., 250 words'
+                      : (formData.platform || 'blog') === 'instagram'
                       ? 'e.g., 100 words'
-                      : 'e.g., 500 words'
+                      : 'e.g., 500 words, 5 paragraphs, 3 pages'
                   }
                   value={formData.customLength}
                   onChange={(e) => setFormData(prev => ({ ...prev, customLength: e.target.value }))}
+                  onKeyDown={handleKeyDown}
                   className="border-blue-200 focus:border-blue-500 text-black"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Be specific: words, characters, paragraphs, pages, etc.
+                </p>
               </div>
             )}
           </div>
@@ -531,7 +592,7 @@ Please provide improved version of the entire document based on the user's reque
 
       case 6:
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" onKeyDown={handleKeyDown}>
             <div className="text-center">
               <Hash className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2 text-black">Any specific keywords?</h3>
@@ -561,6 +622,9 @@ Please provide improved version of the entire document based on the user's reque
                       } else {
                         setFormData(prev => ({ ...prev, currentKeyword: '' }))
                       }
+                    } else if (e.key === 'Enter' && !formData.currentKeyword?.trim()) {
+                      // If no keyword being typed, proceed to next step
+                      handleKeyDown(e)
                     }
                   }}
                   className="border-blue-200 focus:border-blue-500 text-black"
@@ -603,11 +667,11 @@ Please provide improved version of the entire document based on the user's reque
                 Ready to generate!
               </h4>
               <div className="text-sm text-gray-700 space-y-1">
-                <p><strong className="text-black">Topic:</strong> {formData.topic}</p>
-                <p><strong className="text-black">Audience:</strong> {formData.audience}</p>
-                <p><strong className="text-black">Goals:</strong> {formData.goals.map(g => GOALS.find(goal => goal.id === g)?.name).join(', ')}</p>
-                <p><strong className="text-black">Platform:</strong> {PLATFORMS.find(p => p.id === formData.platform)?.name}</p>
-                <p><strong className="text-black">Length:</strong> {LENGTHS.find(l => l.id === formData.length)?.name}</p>
+                <p><strong className="text-black">Topic:</strong> {formData.topic || 'Content Topic'}</p>
+                <p><strong className="text-black">Audience:</strong> {formData.audience || 'General audience'}</p>
+                <p><strong className="text-black">Goals:</strong> {formData.goals.length > 0 ? formData.goals.map(g => GOALS.find(goal => goal.id === g)?.name).join(', ') : 'Educate'}</p>
+                <p><strong className="text-black">Platform:</strong> {PLATFORMS.find(p => p.id === (formData.platform || 'blog'))?.name || 'Blog Post'}</p>
+                <p><strong className="text-black">Length:</strong> {LENGTHS.find(l => l.id === (formData.length || 'medium'))?.name || 'Medium'}</p>
                 {formData.keywords && <p><strong className="text-black">Keywords:</strong> {formData.keywords}</p>}
               </div>
             </div>
@@ -620,12 +684,15 @@ Please provide improved version of the entire document based on the user's reque
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} className="bg-white">
+    <Dialog open={isOpen} onOpenChange={handleDialogClose} className="bg-white">
       <DialogContent className="sm:max-w-2xl bg-white max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-black">
             <Wand2 className="w-5 h-5 text-blue-600" />
             Content Creation Wizard
+            {isGenerating && (
+              <span className="text-sm text-yellow-600 font-normal">- Generating Content...</span>
+            )}
           </DialogTitle>
         </DialogHeader>
         
@@ -662,27 +729,41 @@ Please provide improved version of the entire document based on the user's reque
               {step === 1 ? 'Choose Method' : 'Back'}
             </Button>
             
-            {step < totalSteps ? (
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Next
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Sparkles className="w-4 h-4" />
-                Generate Content
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {canSkip() && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSkip}
+                  className="flex items-center gap-2 border-gray-200 text-gray-600 hover:bg-gray-50"
+                >
+                  <SkipForward className="w-4 h-4" />
+                  Skip
+                </Button>
+              )}
+              
+              {step < totalSteps ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Generate Content
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </DialogContent>

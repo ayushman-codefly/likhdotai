@@ -269,10 +269,11 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
                     <Input
                       id="name"
                       type="text"
+                      autoComplete="off"
                       placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="h-12 text-lg border-2 border-slate-200 focus:border-blue-500 rounded-xl"
+                      className="h-12 text-black text-lg border-2 border-slate-200 focus:border-blue-500 rounded-xl"
                       required
                     />
                   </div>
