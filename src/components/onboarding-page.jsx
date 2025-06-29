@@ -33,7 +33,7 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
-  const [selectedUseCase, setSelectedUseCase] = useState(null)
+  const [selectedUseCases, setSelectedUseCases] = useState([])
   const router = useRouter()
 
   // Generate avatar URLs from toon_1.png to toon_10.png
@@ -50,66 +50,83 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
       icon: PenTool,
     },
     {
-      id: "translation",
-      title: "Translation & Localization",
-      description: "Multi-language content adaptation",
-      icon: Globe,
-    },
-    {
-      id: "digital-marketing",
-      title: "Digital Marketing & Social Media",
-      description: "Social posts, campaigns, ads",
+      id: "marketing",
+      title: "Marketing & Sales",
+      description: "Email campaigns, social media, ads",
       icon: Megaphone,
     },
     {
-      id: "publishing",
-      title: "Publishing & Print Media",
-      description: "Books, magazines, newspapers",
-      icon: BookOpen,
-    },
-    {
-      id: "government",
-      title: "Government & Legal Documentation",
-      description: "Official documents, legal texts",
-      icon: FileText,
-    },
-    {
-      id: "customer-support",
-      title: "Customer Support & Communication",
-      description: "Help desk, client communication",
-      icon: Headphones,
-    },
-    {
       id: "education",
-      title: "Education & E-learning",
-      description: "Course content, educational materials",
+      title: "Education & Training",
+      description: "Course materials, presentations, guides",
       icon: GraduationCap,
     },
     {
+      id: "business",
+      title: "Business Communication",
+      description: "Reports, proposals, documentation",
+      icon: FileText,
+    },
+    {
       id: "research",
-      title: "Research & Linguistics",
-      description: "Academic research, language studies",
+      title: "Research & Analysis",
+      description: "Data analysis, research papers, summaries",
       icon: Search,
+    },
+    {
+      id: "entertainment",
+      title: "Entertainment & Media",
+      description: "Scripts, stories, podcasts, videos",
+      icon: Headphones,
+    },
+    {
+      id: "translation",
+      title: "Translation & Localization",
+      description: "Multi-language content, cultural adaptation",
+      icon: Globe,
+    },
+    {
+      id: "personal",
+      title: "Personal Projects",
+      description: "Personal writing, journaling, creative projects",
+      icon: User,
     },
   ]
 
+  const handleUseCaseToggle = (useCaseId) => {
+    setSelectedUseCases(prev => {
+      if (prev.includes(useCaseId)) {
+        return prev.filter(id => id !== useCaseId)
+      } else {
+        return [...prev, useCaseId]
+      }
+    })
+  }
+
+  const handleNextStep = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-
-    if (!name.trim() || !selectedAvatar) {
-      return
-    }
+    if (!name.trim() || !selectedAvatar || selectedUseCases.length === 0) return
 
     setIsSubmitting(true)
-
     try {
-      // Simulate API call to save user data
       const userData = {
         id: userId,
         fullname: name.trim(),
         email,
         image: selectedAvatar,
-        usecase: selectedUseCase,
+        usecase: selectedUseCases.join(", "), // Store as comma-separated string
       }
 
       // Here you would typically make an API call to save the data
@@ -123,202 +140,131 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
     }
   }
 
-  const handleNextStep = () => {
-    if (currentStep === 1 && name.trim() && selectedAvatar) {
-      setCurrentStep(2)
-    }
-  }
-
-  const handlePrevStep = () => {
-    if (currentStep === 2) {
-      setCurrentStep(1)
-    }
+  const getSelectedUseCaseTitles = () => {
+    return selectedUseCases.map(id => 
+      useCases.find(uc => uc.id === id)?.title
+    ).filter(Boolean).join(", ")
   }
 
   if (isCompleted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-lg border-b border-blue-200 px-4 py-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Type className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                Likh.AI
-              </span>
-            </div>
-            <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
-              <Sparkles className="w-4 h-4 mr-1" />
-              Setup Complete
-            </Badge>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
-          <Card className="w-full max-w-2xl border-0 shadow-2xl bg-white">
-            <CardHeader className="text-center pb-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <div className="text-center space-y-8">
+              {/* Success Animation */}
               <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-10 w-10 text-white" />
+                <div className="w-20 h-20 mx-auto bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-lg">
+                  <CheckCircle className="w-10 h-10 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
+                <div className="absolute inset-0 w-20 h-20 mx-auto bg-gradient-to-r from-green-400 to-green-500 rounded-full animate-ping opacity-20"></div>
               </div>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Welcome to Likh.AI!
-              </CardTitle>
-              <CardDescription className="text-lg text-slate-600">
-                Your profile has been set up successfully
-              </CardDescription>
-              <div className="flex justify-center space-x-2 mt-4">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-              </div>
-            </CardHeader>
 
-            <CardContent className="px-8 pb-8">
-              <div className="space-y-8">
-                {/* Profile Summary */}
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6">
-                  <div className="flex items-center justify-center space-x-4">
+              {/* User Preview */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="relative">
                     <Image
-                      src={selectedAvatar || "/placeholder.svg"}
-                      alt="Your avatar"
-                      width={60}
-                      height={60}
+                      src={selectedAvatar}
+                      alt="Selected avatar"
+                      width={80}
+                      height={80}
                       className="rounded-full border-4 border-blue-200"
                     />
+                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                  <div className="text-left">
                     <div className="text-left">
                       <p className="font-semibold text-slate-900">{name}</p>
                       <p className="text-slate-600 text-sm">{email}</p>
-                      {selectedUseCase && (
+                      {selectedUseCases.length > 0 && (
                         <p className="text-blue-600 text-sm font-medium">
-                          {useCases.find((uc) => uc.id === selectedUseCase)?.title}
+                          {getSelectedUseCaseTitles()}
                         </p>
                       )}
                     </div>
                   </div>
                 </div>
-
-                {/* Welcome Message */}
-                <div className="text-center space-y-4">
-                  <h3 className="text-2xl font-bold text-slate-900">You're all set!</h3>
-                  <p className="text-slate-600">
-                    Start typing in Indian languages with AI-powered assistance. Your personalized experience awaits in
-                    the dashboard.
-                  </p>
-                </div>
-
-                {/* Navigation Buttons */}
-                <div className="pt-4 flex space-x-4">
-                  <Button
-                    onClick={() => setIsCompleted(false)}
-                    variant="outline"
-                    size="lg"
-                    className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50 px-8 py-4 text-lg rounded-full"
-                  >
-                    <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={checkUserOnboarded}
-                    size="lg"
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    Continue to Dashboard
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+
+              {/* Welcome Message */}
+              <div className="text-center space-y-4">
+                <h3 className="text-2xl font-bold text-slate-900">You're all set!</h3>
+                <p className="text-slate-600">
+                  Welcome to Likh.AI! Your account has been created successfully. 
+                  You can now start creating amazing content with our AI-powered tools.
+                </p>
+              </div>
+
+              {/* CTA Button */}
+              <Button
+                onClick={() => {
+                  checkUserOnboarded()
+                  router.push('/dashboard')
+                }}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Start Creating
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-lg border-b border-blue-200 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Type className="w-4 h-4 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+        <CardHeader className="text-center pb-2">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              Likh.AI
-            </span>
           </div>
-          <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
-            <Sparkles className="w-4 h-4 mr-1" />
-            Setup Your Profile
-          </Badge>
-        </div>
-      </div>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+            Welcome to Likh.AI
+          </CardTitle>
+          <CardDescription className="text-lg text-slate-600 mt-2">
+            Let's set up your account in just a few steps
+          </CardDescription>
+        </CardHeader>
 
-      {/* Main Content */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
-        <Card className="w-full max-w-2xl border-0 shadow-2xl bg-white">
-          <CardHeader className="text-center pb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-8 w-8 text-white" />
+        <CardContent className="p-8 pt-4">
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-600">Step {currentStep} of 3</span>
+              <span className="text-sm text-slate-500">{Math.round((currentStep / 3) * 100)}% Complete</span>
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-              Complete Your Profile
-            </CardTitle>
-            <CardDescription className="text-lg text-slate-600">
-              {currentStep === 1
-                ? "Just a few details to get you started with your typing assistant"
-                : "Tell us how you plan to use Likh.AI"}
-            </CardDescription>
-            <div className="flex justify-center space-x-2 mt-4">
+            <div className="w-full bg-slate-200 rounded-full h-2">
               <div
-                className={`w-3 h-3 rounded-full transition-colors ${currentStep >= 1 ? "bg-blue-500" : "bg-slate-200"}`}
-              />
-              <div
-                className={`w-3 h-3 rounded-full transition-colors ${currentStep >= 2 ? "bg-blue-500" : "bg-slate-200"}`}
-              />
+                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${(currentStep / 3) * 100}%` }}
+              ></div>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="px-8 pb-8">
-            <form onSubmit={currentStep === 2 ? handleSubmit : (e) => e.preventDefault()} className="space-y-8">
-              {currentStep === 1 && (
-                <>
-                  {/* Email Field (Disabled) */}
-                  <div className="space-y-3">
-                    <Label htmlFor="email" className="text-slate-700 font-medium flex items-center space-x-2">
-                      <Mail className="w-4 h-4" />
-                      <span>Email Address</span>
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="email"
-                        type="text"
-                        placeholder={email}
-                        disabled
-                        className="placeholder-slate-800 focus:bg-amber-500 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-slate-700 h-12 text-lg"
-                      />
-                      <Badge
-                        variant="secondary"
-                        className="absolute right-3 top-3 bg-green-100 text-green-700 border-green-200"
-                      >
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Verified
-                      </Badge>
-                    </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Step 1: Name */}
+            {currentStep === 1 && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <User className="w-8 h-8 text-blue-600" />
                   </div>
+                  <h3 className="text-2xl font-semibold text-slate-900">What's your name?</h3>
+                  <p className="text-slate-600">This helps us personalize your experience</p>
+                </div>
 
-                  {/* Name Field */}
-                  <div className="space-y-3">
-                    <Label htmlFor="name" className="text-slate-700 font-medium flex items-center space-x-2">
-                      <User className="w-4 h-4" />
-                      <span>Full Name</span>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+                      Full Name
                     </Label>
                     <Input
                       id="name"
@@ -326,138 +272,205 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
                       placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      className="h-12 text-lg border-2 border-slate-200 focus:border-blue-500 rounded-xl"
                       required
-                      autoComplete="off"
-                      className="text-black border-slate-200 focus:border-blue-400 focus:ring-blue-400 h-12 text-lg"
                     />
                   </div>
 
-                  {/* Avatar Selection */}
-                  <div className="space-y-4">
-                    <Label className="text-slate-700 font-medium">Choose Your Avatar</Label>
-                    <div className="grid grid-cols-5 gap-4">
-                      {avatarOptions.map((avatarUrl, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => setSelectedAvatar(avatarUrl)}
-                          className={`relative rounded-full overflow-hidden border-4 transition-all duration-300 hover:scale-110 hover:shadow-lg ${
-                            selectedAvatar === avatarUrl
-                              ? "border-blue-500 ring-4 ring-blue-200 shadow-lg"
-                              : "border-slate-200 hover:border-blue-300"
-                          }`}
-                        >
-                          <Image
-                            src={avatarUrl || "/placeholder.svg"}
-                            alt={`Avatar option ${index + 1}`}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="flex items-start space-x-3">
+                      <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">Email Address</p>
+                        <p className="text-sm text-blue-700">{email}</p>
+                      </div>
                     </div>
-                    {!selectedAvatar && (
-                      <p className="text-sm text-slate-500 text-center">Please select an avatar to continue</p>
-                    )}
                   </div>
+                </div>
 
-                  {/* Next Button */}
-                  <div className="pt-4">
-                    <Button
+                {/* Navigation Buttons */}
+                <div className="pt-4 flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    disabled={!name.trim()}
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Continue
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Avatar Selection */}
+            {currentStep === 2 && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <User className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-slate-900">Choose your avatar</h3>
+                  <p className="text-slate-600">Pick an avatar that represents you</p>
+                </div>
+
+                <div className="grid grid-cols-5 gap-4">
+                  {avatarOptions.map((avatar, index) => (
+                    <button
+                      key={index}
                       type="button"
-                      onClick={handleNextStep}
-                      size="lg"
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!name.trim() || !selectedAvatar}
+                      onClick={() => setSelectedAvatar(avatar)}
+                      className={`relative p-2 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
+                        selectedAvatar === avatar
+                          ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                          : "border-slate-200 hover:border-blue-300"
+                      }`}
                     >
-                      Next: Choose Your Use Case
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {currentStep === 2 && (
-                <>
-                  {/* Use Case Selection */}
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-slate-900 mb-2">What will you use Likh.AI for?</h3>
-                      <p className="text-slate-600">This helps us personalize your experience</p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {useCases.map((useCase) => (
-                        <button
-                          key={useCase.id}
-                          type="button"
-                          onClick={() => setSelectedUseCase(useCase.id)}
-                          className={`p-4 rounded-xl border-2 text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-                            selectedUseCase === useCase.id
-                              ? "border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 ring-2 ring-blue-200"
-                              : "border-slate-200 bg-white hover:border-blue-300"
-                          }`}
-                        >
-                          <div className="flex items-start space-x-3">
-                            <div
-                              className={`p-2 rounded-lg ${
-                                selectedUseCase === useCase.id
-                                  ? "bg-blue-500 text-white"
-                                  : "bg-slate-100 text-slate-600"
-                              }`}
-                            >
-                              <useCase.icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-slate-900 mb-1">{useCase.title}</h4>
-                              <p className="text-sm text-slate-600">{useCase.description}</p>
-                            </div>
-                            {selectedUseCase === useCase.id && <CheckCircle className="w-5 h-5 text-blue-500 mt-1" />}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-
-                    {!selectedUseCase && (
-                      <p className="text-sm text-slate-500 text-center">Please select your primary use case</p>
-                    )}
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <div className="pt-4 flex space-x-4">
-                    <Button
-                      type="button"
-                      onClick={handlePrevStep}
-                      variant="outline"
-                      size="lg"
-                      className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50 px-8 py-4 text-lg rounded-full"
-                    >
-                      <ArrowLeft className="w-5 h-5 mr-2" />
-                      Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!selectedUseCase || isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Setting up your account...</span>
+                      <Image
+                        src={avatar}
+                        alt={`Avatar ${index + 1}`}
+                        width={60}
+                        height={60}
+                        className="rounded-lg"
+                      />
+                      {selectedAvatar === avatar && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-white" />
                         </div>
-                      ) : (
-                        "Complete Setup"
                       )}
-                    </Button>
+                    </button>
+                  ))}
+                </div>
+
+                {!selectedAvatar && (
+                  <p className="text-sm text-slate-500 text-center">Please select an avatar</p>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="pt-4 flex space-x-4">
+                  <Button
+                    type="button"
+                    onClick={handlePrevStep}
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 px-8 py-4 text-lg rounded-full transition-all duration-300"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    disabled={!selectedAvatar}
+                    size="lg"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Continue
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Use Case Selection (Multi-select) */}
+            {currentStep === 3 && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Type className="w-8 h-8 text-green-600" />
                   </div>
-                </>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+                  <h3 className="text-2xl font-semibold text-slate-900">What will you use Likh.AI for?</h3>
+                  <p className="text-slate-600">Select all that apply to personalize your experience</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {useCases.map((useCase) => (
+                      <button
+                        key={useCase.id}
+                        type="button"
+                        onClick={() => handleUseCaseToggle(useCase.id)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+                          selectedUseCases.includes(useCase.id)
+                            ? "border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 ring-2 ring-blue-200"
+                            : "border-slate-200 bg-white hover:border-blue-300"
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div
+                            className={`p-2 rounded-lg ${
+                              selectedUseCases.includes(useCase.id)
+                                ? "bg-blue-500 text-white"
+                                : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            <useCase.icon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-slate-900 mb-1">{useCase.title}</h4>
+                            <p className="text-sm text-slate-600">{useCase.description}</p>
+                          </div>
+                          {selectedUseCases.includes(useCase.id) && <CheckCircle className="w-5 h-5 text-blue-500 mt-1" />}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {selectedUseCases.length === 0 && (
+                    <p className="text-sm text-slate-500 text-center">Please select at least one use case</p>
+                  )}
+
+                  {selectedUseCases.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <p className="text-sm font-medium text-blue-900 mb-2">Selected use cases:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedUseCases.map(id => {
+                          const useCase = useCases.find(uc => uc.id === id)
+                          return (
+                            <Badge key={id} className="bg-blue-100 text-blue-800 border-blue-200">
+                              {useCase?.title}
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="pt-4 flex space-x-4">
+                  <Button
+                    type="button"
+                    onClick={handlePrevStep}
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 px-8 py-4 text-lg rounded-full transition-all duration-300"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={selectedUseCases.length === 0 || isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Setting up your account...</span>
+                      </div>
+                    ) : (
+                      "Complete Setup"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

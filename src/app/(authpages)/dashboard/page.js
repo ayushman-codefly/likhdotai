@@ -7,6 +7,14 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import EditorPage from "@/app/_reusables/Editor"
 import OnboardingPage from "@/components/onboarding-page"
 import ContentWizard from "@/components/content-wizard"
@@ -26,6 +34,7 @@ import {
   LogOut,
   User,
   Wand2,
+  Settings,
 } from "lucide-react"
 
 // LCS-based HTML-aware diff function
@@ -1032,32 +1041,61 @@ IMPORTANT INSTRUCTIONS:
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AI Powered</span>
         </div>
 
-          {/* User Info and Logout */}
+          {/* User Info and Settings/Logout Dropdown */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <User className="w-4 h-4" />
-              <span>{session?.user?.email}</span>
-              </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-              onClick={async () => {
-                try {
-                  const supabase = createSupabaseBrowserClient()
-                  await supabase.auth.signOut()
-                  window.location.href = '/'
-                } catch (error) {
-                  console.error('Error signing out:', error)
-                  window.location.href = '/api/auth/signout'
-                }
-              }}
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:text-blue-700"
-            >
-              <LogOut className="w-4 h-4 mr-1" />
-              Logout
-                </Button>
-              </div>
+              <Zap className="w-3 h-3 text-yellow-600" />
+              <span className={`font-medium whitespace-nowrap ${userCredits <= 0 ? 'text-red-600' : userCredits <= 5 ? 'text-orange-600' : 'text-green-600'}`}>
+                {creditsLoading ? '...' : "Credits : "+userCredits}
+              </span>
             </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session?.user?.user_metadata?.image || session?.user?.user_metadata?.avatar_url} alt={session?.user?.email} />
+                    <AvatarFallback className="bg-blue-600 text-white text-sm">
+                      {session?.user?.email?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium text-sm">{session?.user?.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {session?.user?.user_metadata?.fullname || session?.user?.user_metadata?.full_name || "User"}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => window.location.href = '/settings'} className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    try {
+                      const supabase = createSupabaseBrowserClient()
+                      await supabase.auth.signOut()
+                      window.location.href = '/'
+                    } catch (error) {
+                      console.error('Error signing out:', error)
+                      window.location.href = '/api/auth/signout'
+                    }
+                  }}
+                  className="text-red-600 focus:text-red-600 cursor-pointer"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
 
         <div className="flex-1 p-4 overflow-hidden">
           <div className="h-full overflow-auto">

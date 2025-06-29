@@ -93,3 +93,22 @@ export async function setUserInDB({email, id:uuid, image, fullname,usecase}){
         };
     }
 }
+
+export async function updateUserInDB({email, id:uuid, image, fullname, usecase}){
+    try{
+        email = encrypt(email);
+        fullname = encrypt(fullname);
+        const user = await sql.from("users").update({email, usecase, fullname, image}).eq("uuid", uuid)
+        return {
+            dbUser: user,
+            error: null
+        };
+    }
+    catch(err){
+        console.log(err);
+        return {
+            dbUser: null,
+            error: err
+        };
+    }
+}

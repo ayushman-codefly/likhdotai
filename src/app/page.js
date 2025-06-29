@@ -28,8 +28,8 @@ const CompleteScrollSnapLanding = () => {
           {/* Section 1: Hero */}
           <section className="section">
             <div className="content mt-15">
-              <div className="relative min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative min-h-screen text-center flex flex-col gap-10 items-center justify-start pt-20">
+              <div className="relative min-h-[80vh] max-h-[80vh] md:min-h-[90vh] md:max-h-[90vh] lg:min-h-[100vh] lg:max-h-[100vh] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:pt-20 lg:pt-0 items-center">
+                <div className="relative min-h-full text-center flex flex-col gap-12  md:gap-8 items-center justify-start pt-20">
                   <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
                     <Sparkles className="w-4 h-4 mr-1" />
                     Get 3 Months FREE – then just ₹5000/year
@@ -56,7 +56,7 @@ const CompleteScrollSnapLanding = () => {
                   </p>
 
                   <div
-                    className={`flex flex-col gap-4 justify-center items-center mb-12 transition-all duration-1000 delay-500 transform`}
+                    className={`flex flex-col gap-4 justify-center items-center transition-all duration-1000 delay-500 transform`}
                   >
                     <Link
                       href={"/signup"}

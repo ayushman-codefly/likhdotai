@@ -116,6 +116,10 @@
   color: black !important;
 }
 
+body{
+  background-color: linear-gradient(to right, #ffffff, #b6ccff);
+}
+
 /* SET OUTLINE OF CONTENTEDITABLE DIV TO NONE
 SDF */
 
