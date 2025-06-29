@@ -16,8 +16,9 @@ class WordDiff {
     const originalWords = this.tokenize(originalText)
     const modifiedWords = this.tokenize(modifiedText)
     
-    // Use Myers diff algorithm for better word-level comparison
-    return this.myersDiff(originalWords, modifiedWords)
+    // Use Myers diff algorithm and then group consecutive changes
+    const rawDiff = this.myersDiff(originalWords, modifiedWords)
+    return this.groupConsecutiveChanges(rawDiff)
   }
   
   static htmlToText(html) {
@@ -75,7 +76,6 @@ class WordDiff {
     const result = []
     let x = original.length
     let y = modified.length
-    let conflictId = 0
     
     for (let step = d; step >= 0; step--) {
       const v = trace[step]
@@ -104,15 +104,13 @@ class WordDiff {
         if (x > prevX) {
           result.unshift({
             type: 'delete',
-            content: original[x - 1],
-            conflictId: `conflict-${conflictId++}`
+            content: original[x - 1]
           })
           x--
         } else {
           result.unshift({
             type: 'insert',
-            content: modified[y - 1],
-            conflictId: `conflict-${conflictId++}`
+            content: modified[y - 1]
           })
           y--
         }
@@ -122,14 +120,68 @@ class WordDiff {
     return result
   }
   
+  static groupConsecutiveChanges(diffResult) {
+    const grouped = []
+    let currentGroup = null
+    let conflictId = 0
+    
+    for (const item of diffResult) {
+      if (item.type === 'equal') {
+        // Finish any current group
+        if (currentGroup) {
+          currentGroup.conflictId = `conflict-${conflictId++}`
+          grouped.push(currentGroup)
+          currentGroup = null
+        }
+        // Add the equal item
+        grouped.push(item)
+      } else {
+        // Start a new group or continue existing one
+        if (!currentGroup) {
+          currentGroup = {
+            type: 'conflict',
+            deletes: [],
+            inserts: []
+          }
+        }
+        
+        if (item.type === 'delete') {
+          currentGroup.deletes.push(item.content)
+        } else if (item.type === 'insert') {
+          currentGroup.inserts.push(item.content)
+        }
+      }
+    }
+    
+    // Finish any remaining group
+    if (currentGroup) {
+      currentGroup.conflictId = `conflict-${conflictId++}`
+      grouped.push(currentGroup)
+    }
+    
+    return grouped
+  }
+  
   static generateMergeHTML(diffResult) {
     return diffResult.map(item => {
       if (item.type === 'equal') {
         return this.escapeHtml(item.content)
-      } else if (item.type === 'insert') {
-        return `<span data-conflict="${item.conflictId}" data-type="accept" class="bg-green-200 text-green-800 hover:bg-green-300 px-1 rounded cursor-pointer transition-all duration-200 relative inline-block">${this.escapeHtml(item.content)}</span>`
-      } else if (item.type === 'delete') {
-        return `<span data-conflict="${item.conflictId}" data-type="reject" class="bg-red-200 text-red-800 hover:bg-red-300 px-1 rounded cursor-pointer transition-all duration-200 relative inline-block">${this.escapeHtml(item.content)}</span>`
+      } else if (item.type === 'conflict') {
+        let html = ''
+        
+        // Add deletions (red)
+        if (item.deletes.length > 0) {
+          const deleteContent = item.deletes.join('')
+          html += `<span data-conflict="${item.conflictId}" data-type="reject" class="bg-red-200 text-red-800 hover:bg-red-300 px-1 rounded cursor-pointer transition-all duration-200 relative inline-block" title="Click to remove: ${deleteContent.trim()}">${this.escapeHtml(deleteContent)}</span>`
+        }
+        
+        // Add insertions (green)
+        if (item.inserts.length > 0) {
+          const insertContent = item.inserts.join('')
+          html += `<span data-conflict="${item.conflictId}" data-type="accept" class="bg-green-200 text-green-800 hover:bg-green-300 px-1 rounded cursor-pointer transition-all duration-200 relative inline-block" title="Click to add: ${insertContent.trim()}">${this.escapeHtml(insertContent)}</span>`
+        }
+        
+        return html
       }
     }).join('')
   }
@@ -141,34 +193,6 @@ class WordDiff {
   }
 }
 
-// Hover tooltip component
-const HoverTooltip = ({ visible, x, y, type, onAccept, onReject }) => {
-  if (!visible) return null
-  
-  return (
-    <div 
-      className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex space-x-2 pointer-events-none"
-      style={{ left: x, top: y - 70 }}
-    >
-      <button
-        onClick={onAccept}
-        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors pointer-events-auto"
-      >
-        Accept
-      </button>
-      <button
-        onClick={onReject}
-        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors pointer-events-auto"
-      >
-        Reject
-      </button>
-      <div className="text-xs text-gray-600 flex items-center pointer-events-none">
-        {type === 'accept' ? 'New suggestion' : 'Remove this'}
-      </div>
-    </div>
-  )
-}
-
 const MenuBar = ({ editor, mergeMode, onExitMerge, onAcceptAll, onRejectAll }) => {
   if (!editor) {
     return null
@@ -178,7 +202,7 @@ const MenuBar = ({ editor, mergeMode, onExitMerge, onAcceptAll, onRejectAll }) =
     return (
       <div className="control-group border-b border-blue-200 p-3 bg-blue-50">
         <div className="button-group flex flex-wrap gap-2 items-center">
-          <span className="text-sm font-medium text-blue-800">Merge Mode: Word-by-word conflict resolution</span>
+          <span className="text-sm font-medium text-blue-800">Merge Mode: Click on highlighted text to resolve conflicts</span>
           <button 
             onClick={onAcceptAll}
             className="px-3 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600 transition-colors"
@@ -331,14 +355,6 @@ const MenuBar = ({ editor, mergeMode, onExitMerge, onAcceptAll, onRejectAll }) =
 }
 
 export default ({ content, setContent, mergeMode = false, originalContent = '', modifiedContent = '' }) => {
-  const [tooltip, setTooltip] = useState({ 
-    visible: false, 
-    x: 0, 
-    y: 0, 
-    type: null, 
-    conflictId: null 
-  })
-  
   // Generate merge content when in merge mode
   const mergeContent = useMemo(() => {
     if (!mergeMode || !originalContent || !modifiedContent) return content
@@ -364,31 +380,25 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     },
   })
 
-  // Handle conflict hovers
-  const handleEditorMouseMove = useCallback((event) => {
+  // Handle direct clicks on conflict spans - no popups, direct action
+  const handleEditorClick = useCallback((event) => {
     if (!mergeMode) return
     
     const conflictElement = event.target.closest('[data-conflict]')
     if (conflictElement) {
+      event.preventDefault()
+      event.stopPropagation()
+      
       const conflictId = conflictElement.getAttribute('data-conflict')
       const type = conflictElement.getAttribute('data-type')
-      const rect = conflictElement.getBoundingClientRect()
       
-      setTooltip({
-        visible: true,
-        x: rect.left + rect.width / 2 - 75,
-        y: rect.top + window.scrollY,
-        type,
-        conflictId
-      })
-    } else {
-      setTooltip({ visible: false, x: 0, y: 0, type: null, conflictId: null })
+      if (type === 'accept') {
+        handleAcceptConflict(conflictId)
+      } else if (type === 'reject') {
+        handleRejectConflict(conflictId)
+      }
     }
   }, [mergeMode])
-
-  const handleEditorMouseLeave = useCallback(() => {
-    setTooltip({ visible: false, x: 0, y: 0, type: null, conflictId: null })
-  }, [])
 
   const handleAcceptConflict = useCallback((conflictId) => {
     if (!editor || !conflictId) return
@@ -404,8 +414,6 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     )
     
     editor.commands.setContent(updatedHTML)
-    setTooltip({ visible: false, x: 0, y: 0, type: null, conflictId: null })
-    
     if (setContent) setContent(updatedHTML)
   }, [editor, setContent])
 
@@ -423,8 +431,6 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     )
     
     editor.commands.setContent(updatedHTML)
-    setTooltip({ visible: false, x: 0, y: 0, type: null, conflictId: null })
-    
     if (setContent) setContent(updatedHTML)
   }, [editor, setContent])
 
@@ -490,17 +496,7 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
           mergeMode ? 'cursor-pointer select-none' : ''
         }`}
         editor={editor}
-        onMouseMove={handleEditorMouseMove}
-        onMouseLeave={handleEditorMouseLeave}
-      />
-      
-      <HoverTooltip
-        visible={tooltip.visible}
-        x={tooltip.x}
-        y={tooltip.y}
-        type={tooltip.type}
-        onAccept={() => handleAcceptConflict(tooltip.conflictId)}
-        onReject={() => handleRejectConflict(tooltip.conflictId)}
+        onClick={handleEditorClick}
       />
     </div>
   )
