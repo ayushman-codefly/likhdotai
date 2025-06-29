@@ -57,12 +57,12 @@ export async function POST(req) {
         let user = await sql.from('credits').select('*').eq('user_id', userid)
         console.log("Initial user credits:", user.data[0]?.chat_credits)
         
-        //if there is no user create a user with 30 chat credits for this month
+        //if there is no user create a user with 100 chat credits for this month
         if (user.data.length === 0) {
             await sql.from('credits').insert({
                 user_id: userid,
                 chat_credits: {
-                    credits: 30,
+                    credits:100,
                     month: new Date().getMonth(),
                     year: new Date().getFullYear()
                 }
@@ -70,11 +70,11 @@ export async function POST(req) {
             // Refetch user data after creation
             user = await sql.from('credits').select('*').eq('user_id', userid)
         }
-        // if there is no credit obj for month update the user credit month and set credits to 30
+        // if there is no credit obj for month update the user credit month and set credits to 100
         else if (user.data[0].chat_credits.month !== new Date().getMonth() || user.data[0].chat_credits.year !== new Date().getFullYear()) {
             await sql.from('credits').update({
                 chat_credits: {
-                    credits: 30,
+                    credits: 100,
                     month: new Date().getMonth(),
                     year: new Date().getFullYear()
                 }
