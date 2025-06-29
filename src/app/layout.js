@@ -20,6 +20,7 @@ export default function RootLayout({ children }) {
       <html className="bg-white overflow-x-hidden" lang="en" suppressHydrationWarning>
         <head>
           <script src="https://cdn.jsdelivr.net/npm/swalekh-sdk@2.6.0/swalekh.js" />
+          <script src="https://cdn.jsdelivr.net/npm/reverie-stt-sdk/dist/bundle.js" />
         </head>
         <body className={interSans.className}>
           <ThemeProvider

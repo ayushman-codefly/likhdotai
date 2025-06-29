@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import MicrophoneButton, { LanguageSelector } from "@/components/MicrophoneButton"
 import useSession from "@/lib/supabase/use-session"
 
 export default function ChatWindow({ documentContent = "", onSuggestion }) {
@@ -21,13 +22,25 @@ export default function ChatWindow({ documentContent = "", onSuggestion }) {
   ])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
   const messagesEndRef = useRef(null)
+  const textareaRef = useRef(null)
   const session = useSession()
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+
+  // Handle STT transcript
+  const handleSttTranscript = (transcript) => {
+    if (transcript) {
+      setInputValue(transcript)
+      if (textareaRef.current) {
+        textareaRef.current.value = transcript
+      }
+    }
+  }
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
@@ -169,23 +182,23 @@ Respond with the improved/modified content in clean HTML format.`
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8 bg-blue-100">
+      <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white flex-shrink-0">
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
+          <Avatar className="h-8 w-8 bg-blue-100 flex-shrink-0">
             <AvatarFallback className="text-blue-600">
               <Bot className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
-          <div>
-            <h3 className="font-semibold text-slate-900">AI Assistant</h3>
-            <p className="text-xs text-slate-500">Online</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-slate-900 truncate">AI Assistant</h3>
+            <p className="text-xs text-slate-500 truncate">Online</p>
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -198,7 +211,7 @@ Respond with the improved/modified content in clean HTML format.`
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4 min-h-0 overflow-hidden">
         <div className="space-y-4">
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -217,17 +230,17 @@ Respond with the improved/modified content in clean HTML format.`
                   </AvatarFallback>
                 </Avatar>
                 <Card
-                  className={`p-3 ${
+                  className={`p-3 min-w-0 ${
                     message.role === "user" ? "bg-blue-600 text-white" : "bg-blue-50 border-blue-200"
                   }`}
                 >
                   {message.role === "user" ? (
-                    <p className="text-sm whitespace-pre-wrap text-white">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap text-white break-words">{message.content}</p>
                   ) : (
                     <div>
                       {message.content ? (
                         <div 
-                          className="text-sm text-black max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-bold [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:ml-4"
+                          className="text-sm text-black max-w-none break-words [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-bold [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:ml-4"
                           dangerouslySetInnerHTML={{ __html: message.content }}
                         />
                       ) : (
@@ -252,32 +265,60 @@ Respond with the improved/modified content in clean HTML format.`
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-blue-200 bg-white">
-        <div className="flex space-x-2">
-          <Textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask AI to improve your document..."
-            className="flex-1 min-h-[60px] max-h-32 resize-none text-black border-blue-200 focus:border-blue-400 focus:ring-blue-400"
+      <div className="p-4 border-t border-blue-200 bg-white flex-shrink-0 overflow-hidden">
+        {/* Language Selector - Outside input area */}
+        <div className="flex items-center justify-between mb-2">
+          <LanguageSelector
+            selectedLanguage={selectedLanguage}
+            onLanguageChange={setSelectedLanguage}
             disabled={isLoading}
           />
+          <span className="text-xs text-gray-500 truncate">Select language for voice input</span>
+        </div>
+        
+        <div className="flex space-x-2 relative">
+          <div className="flex-1 relative min-w-0">
+            <Textarea
+              ref={textareaRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask AI..."
+              className="flex-1 min-h-[60px] max-h-32 resize-none text-black border-blue-200 focus:border-blue-400 focus:ring-blue-400 pr-12 w-full"
+              disabled={isLoading}
+            />
+            
+            {/* Microphone Button - No language selector */}
+            <div className="absolute right-2 top-2">
+              <MicrophoneButton
+                onTranscript={handleSttTranscript}
+                disabled={isLoading}
+                apiKey={process.env.NEXT_PUBLIC_REVERIE_API_KEY || ""}
+                appId={process.env.NEXT_PUBLIC_REVERIE_APP_ID || ""}
+                language={selectedLanguage}
+                className="h-8 w-8"
+                showLanguageSelector={false}
+                onLanguageChange={setSelectedLanguage}
+              />
+            </div>
+          </div>
+          
           <Button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white self-end"
+            className="bg-blue-600 hover:bg-blue-700 text-white self-end flex-shrink-0"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
         
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 mt-2 overflow-hidden">
           <Button
             size="sm"
             variant="outline"
             onClick={() => setInputValue("Improve this document")}
             disabled={isLoading || !documentContent.trim()}
-            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            className="border-blue-200 text-blue-700 hover:bg-blue-50 flex-shrink-0"
           >
             Improve
           </Button>
@@ -286,7 +327,7 @@ Respond with the improved/modified content in clean HTML format.`
             variant="outline"
             onClick={() => setInputValue("Fix grammar and spelling")}
             disabled={isLoading || !documentContent.trim()}
-            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            className="border-blue-200 text-blue-700 hover:bg-blue-50 flex-shrink-0"
           >
             Fix Grammar
           </Button>
@@ -295,7 +336,7 @@ Respond with the improved/modified content in clean HTML format.`
             variant="outline"
             onClick={() => setInputValue("Make it more concise")}
             disabled={isLoading || !documentContent.trim()}
-            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            className="border-blue-200 text-blue-700 hover:bg-blue-50 flex-shrink-0"
           >
             Shorten
           </Button>

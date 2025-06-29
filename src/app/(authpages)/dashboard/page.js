@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
@@ -15,10 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import EditorPage from "@/app/_reusables/Editor"
+import Editor from "@/app/_reusables/Editor"
 import OnboardingPage from "@/components/onboarding-page"
 import ContentWizard from "@/components/content-wizard"
 import InitialPromptDialog from "@/components/initial-prompt-dialog"
+import MicrophoneButton, { LanguageSelector } from "@/components/MicrophoneButton"
 import { getUserFromDB, getUserCredits } from "@/app/api/handlers/userHandlers"
 import useSession from "@/lib/supabase/use-session"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
@@ -36,6 +37,7 @@ import {
   Wand2,
   Settings,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 // LCS-based HTML-aware diff function
 function createIntelligentDiff(original, modified) {
@@ -263,10 +265,15 @@ export default function Page() {
   const [hasShownInitialDialog, setHasShownInitialDialog] = useState(false)
   const [userCredits, setUserCredits] = useState(0)
   const [creditsLoading, setCreditsLoading] = useState(true)
+  const [selectedLanguage, setSelectedLanguage] = useState("en")
+
+  // STT states
+  const [isTranscribing, setIsTranscribing] = useState(false)
 
   const chatContainerRef = useRef(null)
   const chatInputRef = useRef(null)
   const session = useSession()
+  const router = useRouter()
 
   // Check if user exists in database
   useEffect(() => {
@@ -571,6 +578,16 @@ IMPORTANT INSTRUCTIONS:
     setInput(content)
   }
 
+  // Handle STT transcript
+  const handleSttTranscript = (transcript) => {
+    if (transcript && chatInputRef.current) {
+      // Update the contentEditable div with transcript
+      chatInputRef.current.textContent = transcript
+      setInput(transcript)
+      setIsTranscribing(true)
+    }
+  }
+
   const applyChangesToEditor = (messageId, suggestedContent) => {
     setOriginalDocument(document)
     setModifiedDocument(suggestedContent)
@@ -787,7 +804,268 @@ IMPORTANT INSTRUCTIONS:
 
   // Render dashboard if user exists
   return (
-    <div className="h-[calc(100vh-4rem)] flex bg-gray-50">
+    <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 p-4 border-b border-blue-200 bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between max-w-full">
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
+            <Avatar className="h-10 w-10 bg-blue-100 flex-shrink-0">
+              <AvatarImage 
+                src={session?.user?.user_metadata?.image || session?.user?.user_metadata?.avatar_url || session?.user?.user_metadata?.picture} 
+                alt={session?.user?.user_metadata?.fullname || session?.user?.user_metadata?.full_name || session?.user?.email} 
+              />
+              <AvatarFallback className="text-blue-600">
+                {session?.user?.user_metadata?.fullname?.charAt(0)?.toUpperCase() || 
+                 session?.user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 
+                 session?.user?.email?.charAt(0)?.toUpperCase() || 
+                 "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-bold text-slate-900 truncate">
+                {session?.user?.user_metadata?.fullname || 
+                 session?.user?.user_metadata?.full_name || 
+                 session?.user?.email?.split('@')[0] || 
+                 'Dashboard'}
+              </h1>
+              <p className="text-sm text-slate-600 truncate">Create and manage your documents</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              onClick={() => router.push('/settings')}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              size="sm"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Document Editor */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className="flex-1 p-4 overflow-hidden">
+            <div className="h-full max-w-full">
+              <Editor
+                content={document}
+                setContent={setDocument}
+                mergeMode={showDiffView}
+                originalContent={originalDocument}
+                modifiedContent={modifiedDocument}
+              />
+            </div>
+          </div>
+        </div>
+
+        <Separator orientation="vertical" />
+
+        {/* AI Chat Panel */}
+        <div className="w-96 h-[90%] flex flex-col bg-white min-h-0 flex-shrink-0 overflow-hidden">
+          <div className="p-4 border-b flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <h2 className="font-semibold text-black truncate">AI Assistant</h2>
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex-shrink-0">AI</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs flex-shrink-0 ml-2">
+                <Zap className="w-3 h-3 text-yellow-600" />
+                <span className={`font-medium whitespace-nowrap ${userCredits <= 0 ? 'text-red-600' : userCredits <= 5 ? 'text-orange-600' : 'text-green-600'}`}>
+                  {creditsLoading ? '...' : "Credits : "+userCredits}
+                </span>
+              </div>
+            </div>
+            <p className="text-sm text-blue-600 mt-1">Chat with your AI assistant</p>
+          </div>
+
+          <ScrollArea className="flex-1 p-4 min-h-0 overflow-hidden" ref={chatContainerRef}>
+            <div className="space-y-4">
+              {messages.length === 0 && (
+                <div className="text-center text-blue-500 py-8">
+                  <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm text-black">Start a conversation with AI</p>
+                  <p className="text-xs mt-1 text-blue-400">
+                    AI will analyze your entire document and suggest improvements
+                  </p>
+                </div>
+              )}
+
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] ${message.role === "user" ? "" : "w-full"}`}>
+                  <Card
+                      className={`p-3 ${
+                        message.role === "user" ? "bg-blue-600 text-white" : "bg-blue-50 border-blue-200"
+                      }`}
+                    >
+                      {message.role === "user" ? (
+                        <p className="text-sm whitespace-pre-wrap text-white">{message.content}</p>
+                      ) : (
+                        <div>
+                          {message.content ? (
+                            <div 
+                              className="text-sm text-black max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-bold [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:ml-4"
+                              dangerouslySetInnerHTML={{ __html: message.content }}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200" />
+                              <span className="text-sm">AI is thinking...</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                  </Card>
+
+                    {/* Apply Changes Button for Assistant Messages */}
+                    {message.role === "assistant" && message.hasChanges && (
+                      <div className="mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => applyChangesToEditor(message.id, message.suggestedDocument)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Apply Changes to Editor
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Show when changes are applied */}
+                    {message.changesApplied && (
+                      <div className="mt-2 text-xs text-blue-600 flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        Changes applied - Review in diff view
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="flex justify-start">
+                  <Card className="bg-blue-50 border-blue-200 p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200" />
+                    </div>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="p-4 border-t flex-shrink-0">
+            {/* Language Selector - Outside input area */}
+            <div className="flex items-center justify-between mb-2">
+              <LanguageSelector
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
+                disabled={userCredits <= 0 || isLoading}
+              />
+              <span className="text-xs text-gray-500 truncate">Select language for voice input</span>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <div className="flex-1 relative min-w-0">
+                <div
+                  ref={chatInputRef}
+                  contentEditable={userCredits > 0}
+                  onInput={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit(e)
+                    }
+                  }}
+                  className={`w-full min-h-[40px] max-h-[120px] p-3 pr-12 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    wordWrap: "break-word",
+                  }}
+                  data-placeholder={userCredits <= 0 ? "No credits remaining..." : "Ask AI..."}
+                  suppressContentEditableWarning={true}
+                />
+                {!input.trim() && (
+                  <div className="absolute top-3 left-3 text-gray-500 text-sm pointer-events-none">
+                    {userCredits <= 0 ? "No credits remaining..." : "Ask AI..."}
+                  </div>
+                )}
+                
+                {/* Microphone Button - No language selector */}
+                <div className="absolute right-2 top-2">
+                  <MicrophoneButton
+                    onTranscript={handleSttTranscript}
+                    disabled={userCredits <= 0 || isLoading}
+                    apiKey={process.env.NEXT_PUBLIC_REVERIE_API_KEY || ""}
+                    appId={process.env.NEXT_PUBLIC_REVERIE_APP_ID || ""}
+                    language={selectedLanguage}
+                    className="h-8 w-8"
+                    showLanguageSelector={false}
+                    onLanguageChange={setSelectedLanguage}
+                  />
+                </div>
+              </div>
+              
+              <Button
+                type="submit"
+                disabled={isLoading || !input.trim() || userCredits <= 0}
+                className={`self-end bg-blue-600 ${isLoading || !input.trim() || userCredits <= 0 ? "text-black":"text-white"} hover:bg-blue-700 flex-shrink-0`}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </form>
+
+            <div className="flex flex-wrap gap-1 mt-2 overflow-hidden">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowContentWizard(true)}
+                disabled={isLoading || userCredits <= 0}
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 text-xs px-2 flex-shrink-0"
+              >
+                <Wand2 className="w-3 h-3 mr-1" />
+                Wizard
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => generateContent("Improve this document")}
+                disabled={isLoading || !document.trim() || userCredits <= 0}
+                className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2 flex-shrink-0"
+              >
+                Improve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => generateContent("Fix grammar and spelling")}
+                disabled={isLoading || !document.trim() || userCredits <= 0}
+                className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2 flex-shrink-0"
+              >
+                Grammar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => generateContent("Make it more concise")}
+                disabled={isLoading || !document.trim() || userCredits <= 0}
+                className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2 flex-shrink-0"
+              >
+                Shorten
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Diff View Overlay */}
       {showDiffView && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -1032,260 +1310,6 @@ IMPORTANT INSTRUCTIONS:
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Document Editor */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="bg-white border-b p-4 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            <h1 className="font-semibold text-black">Document Editor</h1>
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AI Powered</span>
-        </div>
-
-          {/* User Info and Settings/Logout Dropdown */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Zap className="w-3 h-3 text-yellow-600" />
-              <span className={`font-medium whitespace-nowrap ${userCredits <= 0 ? 'text-red-600' : userCredits <= 5 ? 'text-orange-600' : 'text-green-600'}`}>
-                {creditsLoading ? '...' : "Credits : "+userCredits}
-              </span>
-            </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={session?.user?.user_metadata?.image || session?.user?.user_metadata?.avatar_url} alt={session?.user?.email} />
-                    <AvatarFallback className="bg-blue-600 text-white text-sm">
-                      {session?.user?.email?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium text-sm">{session?.user?.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {session?.user?.user_metadata?.fullname || session?.user?.user_metadata?.full_name || "User"}
-                    </p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = '/settings'} className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={async () => {
-                    try {
-                      const supabase = createSupabaseBrowserClient()
-                      await supabase.auth.signOut()
-                      window.location.href = '/'
-                    } catch (error) {
-                      console.error('Error signing out:', error)
-                      window.location.href = '/api/auth/signout'
-                    }
-                  }}
-                  className="text-red-600 focus:text-red-600 cursor-pointer"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <div className="flex-1 p-4 overflow-hidden">
-          <div className="h-full overflow-auto">
-            <EditorPage
-              content={document}
-              setContent={setDocument}
-            />
-            </div>
-          </div>
-      </div>
-
-      <Separator orientation="vertical" />
-
-      {/* AI Chat Panel */}
-      <div className="w-96 flex flex-col bg-white min-h-0 flex-shrink-0">
-        <div className="p-4 border-b flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0" />
-              <h2 className="font-semibold text-black truncate">AI Assistant</h2>
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex-shrink-0">AI</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs flex-shrink-0 ml-2">
-              <Zap className="w-3 h-3 text-yellow-600" />
-              <span className={`font-medium whitespace-nowrap ${userCredits <= 0 ? 'text-red-600' : userCredits <= 5 ? 'text-orange-600' : 'text-green-600'}`}>
-                {creditsLoading ? '...' : "Credits : "+userCredits}
-              </span>
-            </div>
-          </div>
-          <p className="text-sm text-blue-600 mt-1">Chat with your AI assistant</p>
-        </div>
-
-        <ScrollArea className="flex-1 p-4 min-h-0" ref={chatContainerRef}>
-          <div className="space-y-4">
-            {messages.length === 0 && (
-              <div className="text-center text-blue-500 py-8">
-                <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm text-black">Start a conversation with AI</p>
-                <p className="text-xs mt-1 text-blue-400">
-                  AI will analyze your entire document and suggest improvements
-                </p>
-              </div>
-            )}
-
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] ${message.role === "user" ? "" : "w-full"}`}>
-                <Card
-                    className={`p-3 ${
-                      message.role === "user" ? "bg-blue-600 text-white" : "bg-blue-50 border-blue-200"
-                    }`}
-                  >
-                    {message.role === "user" ? (
-                      <p className="text-sm whitespace-pre-wrap text-white">{message.content}</p>
-                    ) : (
-                      <div>
-                        {message.content ? (
-                          <div 
-                            className="text-sm text-black max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-bold [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:ml-4"
-                            dangerouslySetInnerHTML={{ __html: message.content }}
-                          />
-                        ) : (
-                          <div className="flex items-center gap-2 text-gray-500">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
-                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
-                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200" />
-                            <span className="text-sm">AI is thinking...</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                </Card>
-
-                  {/* Apply Changes Button for Assistant Messages */}
-                  {message.role === "assistant" && message.hasChanges && (
-                    <div className="mt-2">
-                      <Button
-                        size="sm"
-                        onClick={() => applyChangesToEditor(message.id, message.suggestedDocument)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white w-full"
-                      >
-                        <Zap className="w-4 h-4 mr-2" />
-                        Apply Changes to Editor
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Show when changes are applied */}
-                  {message.changesApplied && (
-                    <div className="mt-2 text-xs text-blue-600 flex items-center gap-1">
-                      <Check className="w-3 h-3" />
-                      Changes applied - Review in diff view
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex justify-start">
-                <Card className="bg-blue-50 border-blue-200 p-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200" />
-                  </div>
-                </Card>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        <div className="p-4 border-t flex-shrink-0">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <div className="flex-1 relative">
-              <div
-                ref={chatInputRef}
-                contentEditable={userCredits > 0}
-                onInput={handleInputChange}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSubmit(e)
-                }
-              }}
-                className={`w-full min-h-[40px] max-h-[120px] p-3 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                style={{
-                  whiteSpace: "pre-wrap",
-                  wordWrap: "break-word",
-                }}
-                data-placeholder={userCredits <= 0 ? "No credits remaining..." : "Ask AI to improve your document..."}
-                suppressContentEditableWarning={true}
-              />
-              {!input.trim() && (
-                <div className="absolute top-3 left-3 text-gray-500 text-sm pointer-events-none">
-                  {userCredits <= 0 ? "No credits remaining..." : "Ask AI to improve your document..."}
-                </div>
-              )}
-            </div>
-            <Button
-              type="submit"
-              disabled={isLoading || !input.trim() || userCredits <= 0}
-              className={`self-end bg-blue-600 ${isLoading || !input.trim() || userCredits <= 0 ? "text-black":"text-white"} hover:bg-blue-700`}
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </form>
-
-          <div className="flex flex-wrap gap-1 mt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowContentWizard(true)}
-              disabled={isLoading || userCredits <= 0}
-              className="border-purple-200 text-purple-700 hover:bg-purple-50 text-xs px-2"
-            >
-              <Wand2 className="w-3 h-3 mr-1" />
-              Wizard
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => generateContent("Improve this document")}
-              disabled={isLoading || !document.trim() || userCredits <= 0}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2"
-            >
-              Improve
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => generateContent("Fix grammar and spelling")}
-              disabled={isLoading || !document.trim() || userCredits <= 0}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2"
-            >
-              Grammar
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => generateContent("Make it more concise")}
-              disabled={isLoading || !document.trim() || userCredits <= 0}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 text-xs px-2"
-            >
-              Shorten
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
