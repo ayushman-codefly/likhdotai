@@ -6,109 +6,116 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import React, { useState, useCallback, useMemo } from 'react'
 
-// Custom extension for conflict highlighting
-import { Node, mergeAttributes } from '@tiptap/core'
-
-const ConflictHighlight = Node.create({
-  name: 'conflictHighlight',
-  
-  group: 'inline',
-  inline: true,
-  
-  addAttributes() {
-    return {
-      type: {
-        default: 'accept', // 'accept', 'reject', 'neutral'
-      },
-      conflictId: {
-        default: null,
-      },
-    }
-  },
-  
-  parseHTML() {
-    return [
-      {
-        tag: 'span[data-conflict]',
-      },
-    ]
-  },
-  
-  renderHTML({ HTMLAttributes }) {
-    const { type, conflictId } = HTMLAttributes
-    const className = type === 'accept' ? 'bg-green-200 text-green-800 hover:bg-green-300' : 
-                     type === 'reject' ? 'bg-red-200 text-red-800 hover:bg-red-300' : 
-                     'bg-yellow-200 text-yellow-800 hover:bg-yellow-300'
-    
-    return ['span', mergeAttributes(HTMLAttributes, {
-      'data-conflict': conflictId,
-      'data-type': type,
-      'class': `${className} px-1 rounded cursor-pointer transition-colors duration-200 relative`,
-      'title': type === 'accept' ? 'Click to accept this change' : 
-               type === 'reject' ? 'Click to reject this change' : 'Conflicted change'
-    }), 0]
-  },
-})
-
 // Word-level diff algorithm implementation
 class WordDiff {
   static computeDiff(original, modified) {
-    const originalWords = this.tokenize(original)
-    const modifiedWords = this.tokenize(modified)
+    // Convert HTML to plain text for comparison
+    const originalText = this.htmlToText(original)
+    const modifiedText = this.htmlToText(modified)
     
-    // Simple LCS-based diff algorithm
-    const matrix = this.buildLCSMatrix(originalWords, modifiedWords)
-    return this.extractDiff(originalWords, modifiedWords, matrix)
+    const originalWords = this.tokenize(originalText)
+    const modifiedWords = this.tokenize(modifiedText)
+    
+    // Use Myers diff algorithm for better word-level comparison
+    return this.myersDiff(originalWords, modifiedWords)
+  }
+  
+  static htmlToText(html) {
+    // Create a temporary div to extract text content
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = html
+    return tempDiv.textContent || tempDiv.innerText || ''
   }
   
   static tokenize(text) {
-    // Split by words and preserve whitespace
+    // Split by words and preserve whitespace/punctuation
     return text.match(/\S+|\s+/g) || []
   }
   
-  static buildLCSMatrix(arr1, arr2) {
-    const matrix = Array(arr1.length + 1).fill(null).map(() => 
-      Array(arr2.length + 1).fill(0)
-    )
+  static myersDiff(original, modified) {
+    const N = original.length
+    const M = modified.length
+    const MAX = N + M
     
-    for (let i = 1; i <= arr1.length; i++) {
-      for (let j = 1; j <= arr2.length; j++) {
-        if (arr1[i - 1] === arr2[j - 1]) {
-          matrix[i][j] = matrix[i - 1][j - 1] + 1
+    const v = {}
+    const trace = []
+    
+    v[1] = 0
+    
+    for (let d = 0; d <= MAX; d++) {
+      trace.push({...v})
+      
+      for (let k = -d; k <= d; k += 2) {
+        let x
+        if (k === -d || (k !== d && v[k - 1] < v[k + 1])) {
+          x = v[k + 1]
         } else {
-          matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1])
+          x = v[k - 1] + 1
+        }
+        
+        let y = x - k
+        
+        while (x < N && y < M && original[x] === modified[y]) {
+          x++
+          y++
+        }
+        
+        v[k] = x
+        
+        if (x >= N && y >= M) {
+          return this.buildDiffResult(original, modified, trace, d)
         }
       }
     }
     
-    return matrix
+    return this.buildDiffResult(original, modified, trace, MAX)
   }
   
-  static extractDiff(arr1, arr2, matrix) {
+  static buildDiffResult(original, modified, trace, d) {
     const result = []
-    let i = arr1.length
-    let j = arr2.length
+    let x = original.length
+    let y = modified.length
     let conflictId = 0
     
-    while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && arr1[i - 1] === arr2[j - 1]) {
-        result.unshift({ type: 'equal', content: arr1[i - 1] })
-        i--
-        j--
-      } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
-        result.unshift({ 
-          type: 'accept', 
-          content: arr2[j - 1], 
-          conflictId: `conflict-${conflictId++}` 
+    for (let step = d; step >= 0; step--) {
+      const v = trace[step]
+      const k = x - y
+      
+      let prevK
+      if (k === -step || (k !== step && v[k - 1] < v[k + 1])) {
+        prevK = k + 1
+      } else {
+        prevK = k - 1
+      }
+      
+      const prevX = v[prevK]
+      const prevY = prevX - prevK
+      
+      while (x > prevX && y > prevY) {
+        result.unshift({
+          type: 'equal',
+          content: original[x - 1]
         })
-        j--
-      } else if (i > 0) {
-        result.unshift({ 
-          type: 'reject', 
-          content: arr1[i - 1], 
-          conflictId: `conflict-${conflictId++}` 
-        })
-        i--
+        x--
+        y--
+      }
+      
+      if (step > 0) {
+        if (x > prevX) {
+          result.unshift({
+            type: 'delete',
+            content: original[x - 1],
+            conflictId: `conflict-${conflictId++}`
+          })
+          x--
+        } else {
+          result.unshift({
+            type: 'insert',
+            content: modified[y - 1],
+            conflictId: `conflict-${conflictId++}`
+          })
+          y--
+        }
       }
     }
     
@@ -118,40 +125,46 @@ class WordDiff {
   static generateMergeHTML(diffResult) {
     return diffResult.map(item => {
       if (item.type === 'equal') {
-        return item.content
-      } else {
-        return `<span data-conflict="${item.conflictId}" data-type="${item.type}" class="${
-          item.type === 'accept' ? 'bg-green-200 text-green-800 hover:bg-green-300' : 
-          'bg-red-200 text-red-800 hover:bg-red-300'
-        } px-1 rounded cursor-pointer transition-colors duration-200" title="${
-          item.type === 'accept' ? 'Click to accept this change' : 'Click to reject this change'
-        }">${item.content}</span>`
+        return this.escapeHtml(item.content)
+      } else if (item.type === 'insert') {
+        return `<span data-conflict="${item.conflictId}" data-type="accept" class="bg-green-200 text-green-800 hover:bg-green-300 px-1 rounded cursor-pointer transition-all duration-200 relative inline-block">${this.escapeHtml(item.content)}</span>`
+      } else if (item.type === 'delete') {
+        return `<span data-conflict="${item.conflictId}" data-type="reject" class="bg-red-200 text-red-800 hover:bg-red-300 px-1 rounded cursor-pointer transition-all duration-200 relative inline-block">${this.escapeHtml(item.content)}</span>`
       }
     }).join('')
   }
+  
+  static escapeHtml(text) {
+    const div = document.createElement('div')
+    div.textContent = text
+    return div.innerHTML
+  }
 }
 
-// Conflict tooltip component
-const ConflictTooltip = ({ visible, x, y, type, onAccept, onReject }) => {
+// Hover tooltip component
+const HoverTooltip = ({ visible, x, y, type, onAccept, onReject }) => {
   if (!visible) return null
   
   return (
     <div 
-      className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex space-x-2"
-      style={{ left: x, top: y - 60 }}
+      className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex space-x-2 pointer-events-none"
+      style={{ left: x, top: y - 70 }}
     >
       <button
         onClick={onAccept}
-        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors pointer-events-auto"
       >
         Accept
       </button>
       <button
         onClick={onReject}
-        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors pointer-events-auto"
       >
         Reject
       </button>
+      <div className="text-xs text-gray-600 flex items-center pointer-events-none">
+        {type === 'accept' ? 'New suggestion' : 'Remove this'}
+      </div>
     </div>
   )
 }
@@ -165,24 +178,24 @@ const MenuBar = ({ editor, mergeMode, onExitMerge, onAcceptAll, onRejectAll }) =
     return (
       <div className="control-group border-b border-blue-200 p-3 bg-blue-50">
         <div className="button-group flex flex-wrap gap-2 items-center">
-          <span className="text-sm font-medium text-blue-800">Merge Mode: Resolve Conflicts</span>
+          <span className="text-sm font-medium text-blue-800">Merge Mode: Word-by-word conflict resolution</span>
           <button 
             onClick={onAcceptAll}
             className="px-3 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600 transition-colors"
           >
-            Accept All
+            Accept All Green
           </button>
           <button 
             onClick={onRejectAll}
             className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:bg-red-600 transition-colors"
           >
-            Reject All
+            Reject All Red
           </button>
           <button 
             onClick={onExitMerge}
             className="px-3 py-1 text-sm rounded bg-blue-500 text-white hover:bg-blue-600 transition-colors"
           >
-            Exit Merge
+            Finalize Merge
           </button>
         </div>
       </div>
@@ -331,7 +344,7 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     if (!mergeMode || !originalContent || !modifiedContent) return content
     
     const diffResult = WordDiff.computeDiff(originalContent, modifiedContent)
-    return WordDiff.generateMergeHTML(diffResult)
+    return `<p>${WordDiff.generateMergeHTML(diffResult)}</p>`
   }, [mergeMode, originalContent, modifiedContent, content])
 
   const editor = useEditor({
@@ -341,7 +354,6 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
         types: ['heading', 'paragraph'],
       }),
       Highlight,
-      ConflictHighlight,
     ],
     content: mergeMode ? mergeContent : (content || `<p>Start typing your document here...</p>`),
     editable: !mergeMode,
@@ -352,18 +364,20 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     },
   })
 
-  // Handle conflict clicks and hovers
-  const handleEditorClick = useCallback((event) => {
+  // Handle conflict hovers
+  const handleEditorMouseMove = useCallback((event) => {
+    if (!mergeMode) return
+    
     const conflictElement = event.target.closest('[data-conflict]')
-    if (conflictElement && mergeMode) {
+    if (conflictElement) {
       const conflictId = conflictElement.getAttribute('data-conflict')
       const type = conflictElement.getAttribute('data-type')
       const rect = conflictElement.getBoundingClientRect()
       
       setTooltip({
         visible: true,
-        x: rect.left + rect.width / 2 - 50,
-        y: rect.top,
+        x: rect.left + rect.width / 2 - 75,
+        y: rect.top + window.scrollY,
         type,
         conflictId
       })
@@ -372,16 +386,21 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     }
   }, [mergeMode])
 
+  const handleEditorMouseLeave = useCallback(() => {
+    setTooltip({ visible: false, x: 0, y: 0, type: null, conflictId: null })
+  }, [])
+
   const handleAcceptConflict = useCallback((conflictId) => {
     if (!editor || !conflictId) return
     
     const html = editor.getHTML()
+    // Remove the reject span and keep accept span content
     const updatedHTML = html.replace(
       new RegExp(`<span[^>]*data-conflict="${conflictId}"[^>]*data-type="reject"[^>]*>.*?</span>`, 'g'),
       ''
     ).replace(
-      new RegExp(`<span([^>]*data-conflict="${conflictId}"[^>]*data-type="accept"[^>]*)>(.*?)</span>`, 'g'),
-      '$2'
+      new RegExp(`<span[^>]*data-conflict="${conflictId}"[^>]*data-type="accept"[^>]*>(.*?)</span>`, 'g'),
+      '$1'
     )
     
     editor.commands.setContent(updatedHTML)
@@ -394,12 +413,13 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
     if (!editor || !conflictId) return
     
     const html = editor.getHTML()
+    // Remove the accept span and keep reject span content
     const updatedHTML = html.replace(
       new RegExp(`<span[^>]*data-conflict="${conflictId}"[^>]*data-type="accept"[^>]*>.*?</span>`, 'g'),
       ''
     ).replace(
-      new RegExp(`<span([^>]*data-conflict="${conflictId}"[^>]*data-type="reject"[^>]*)>(.*?)</span>`, 'g'),
-      '$2'
+      new RegExp(`<span[^>]*data-conflict="${conflictId}"[^>]*data-type="reject"[^>]*>(.*?)</span>`, 'g'),
+      '$1'
     )
     
     editor.commands.setContent(updatedHTML)
@@ -470,10 +490,11 @@ export default ({ content, setContent, mergeMode = false, originalContent = '', 
           mergeMode ? 'cursor-pointer select-none' : ''
         }`}
         editor={editor}
-        onClick={handleEditorClick}
+        onMouseMove={handleEditorMouseMove}
+        onMouseLeave={handleEditorMouseLeave}
       />
       
-      <ConflictTooltip
+      <HoverTooltip
         visible={tooltip.visible}
         x={tooltip.x}
         y={tooltip.y}
