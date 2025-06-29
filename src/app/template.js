@@ -40,7 +40,7 @@ function ModeToggle() {
 
 export default function Template({ children }) {
   return (
-    <div className="h-screen w-screen">
+    <div className="h-screen w-screen overflow-x-hidden bg-white">
         <div className="fixed left-4 bottom-4">
             {/* <ModeToggle /> */}
         </div>
