@@ -30,7 +30,7 @@ const CONTACT_INFO = {
 const TEAM_INFO = {
   founder: {
     name: "Janajit Bagchi",
-    role: "CEO & Founder",
+    role: "CEO & Co-Founder",
     initials: "JB",
     image: "/janajit.png",
     linkedin: "https://www.linkedin.com/in/janajit-bagchi-20a085174/",
@@ -44,64 +44,6 @@ const ContactPage = () => {
 
   return (
     <>
-      <style>{`
-        /* Default styles for all screen sizes */
-        body {
-          background-color: #f8fafc;
-        }
-
-        main {
-          padding-bottom: 80px; /* Space for fixed footer */
-        }
-
-        /* Scroll-snap styles only for md screens and larger */
-        @media (min-width: 768px) {
-          html {
-            scroll-snap-type: y mandatory;
-            timeline-scope: --section, --main, --site-header;
-          }
-
-          main {
-            view-timeline: --main;
-            padding-bottom: 80px; /* Space for fixed footer */
-          }
-
-          .section {
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            view-timeline: --section;
-            height: 100dvh;
-            min-height: 100vh;
-          }
-
-          .content {
-            overflow: hidden;
-            position: fixed;
-            inset: 0;
-            --contrast: 2;
-            --blur: 0.3rem;
-            animation: blink ease-in-out both;
-            animation-timeline: --section;
-            background: linear-gradient(135deg, #dbeafe 0%, #ffffff 50%, #dbeafe 100%);
-          }
-        }
-
-        @keyframes blink {
-          0%,
-          100% {
-            filter: blur(var(--blur)) contrast(var(--contrast));
-            opacity: 0;
-            visibility: hidden;
-          }
-
-          50% {
-            filter: blur(0) contrast(1);
-            opacity: 1;
-            visibility: visible;
-          }
-        }
-      `}</style>
-
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
         <main>
           {/* Navigation - Fixed */}
@@ -273,12 +215,12 @@ const ContactPage = () => {
           </section>
 
         {/* Section 6: Team */}
-        <section className="section">
+        <section id="team" className="section">
             <div className="content">
               <div className="min-h-screen bg-gradient-to-br py-10 from-blue-50 to-blue-100 flex items-center">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                   <div className="text-center mb-6 md:mb-16">
-                    <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300"><Sparkles /> Meet the Founder</Badge>
+                    <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300"><Sparkles /> Meet the Co-Founder</Badge>
                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 md:mb-6">The visionary behind Likh.AI</h2>
                     <p className="text-lg text-slate-600">
                       Building for the people who power India's language industries — one keystroke at a time.
@@ -293,7 +235,7 @@ const ContactPage = () => {
                           <AvatarFallback className="text-white text-3xl font-bold">JB</AvatarFallback>
                         </Avatar>
                         <h3 className="text-2xl font-bold text-slate-900 mb-2">Janajit Bagchi</h3>
-                        <p className="text-blue-600 font-semibold mb-4">CEO & Founder</p>
+                        <p className="text-blue-600 font-semibold mb-4">CEO & Co-Founder</p>
                         <p className="text-slate-600">
                           Passionate about empowering Indian language professionals with cutting-edge AI technology that
                           understands our unique linguistic needs.
@@ -307,7 +249,7 @@ const ContactPage = () => {
           </section>
 
           {/* Section 5: Enterprise Solutions */}
-          <section className="section">
+          <section id="enterprise" className="section">
             <div className="content">
               <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

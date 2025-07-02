@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,13 +24,13 @@ import {
 } from "lucide-react"
 
 const PLATFORMS = [
-  { id: 'blog', name: 'Blog Post', icon: '📝', length: 'Medium (600-800 words)' },
+  { id: 'blog', name: 'Blog Post', icon: '📝', length: 'max 2000+ words' },
   { id: 'linkedin', name: 'LinkedIn', icon: '💼', length: 'Short (300 words)' },
   { id: 'instagram', name: 'Instagram', icon: '📸', length: 'Very short (100 words)' },
   { id: 'twitter', name: 'X (Twitter)', icon: '🐦', length: 'Very short (280 chars)' },
-  { id: 'newsletter', name: 'Newsletter', icon: '📧', length: 'Medium (600-800 words)' },
-  { id: 'youtube', name: 'YouTube Script', icon: '🎥', length: 'Long (1200+ words)' },
-  { id: 'medium', name: 'Medium', icon: '✍️', length: 'Long (1200+ words)' },
+  { id: 'newsletter', name: 'Newsletter', icon: '📧', length: 'Medium to Long (600-1200+ words)' },
+  { id: 'youtube', name: 'YouTube Script', icon: '🎥', length: 'Long (2000+ words)' },
+  { id: 'medium', name: 'Medium', icon: '✍️', length: 'Long (2000+ words)' },
   { id: 'custom', name: 'Custom', icon: '⚙️', length: 'You choose' }
 ]
 
@@ -40,7 +40,8 @@ const GOALS = [
   { id: 'persuade', name: 'Persuade', icon: '💪', desc: 'Change minds or behavior' },
   { id: 'traffic', name: 'Drive Traffic', icon: '🚀', desc: 'Get more visitors' },
   { id: 'seo', name: 'Rank on Google', icon: '🔍', desc: 'SEO-optimized content' },
-  { id: 'sell', name: 'Sell Something', icon: '💰', desc: 'Convert readers to buyers' }
+  { id: 'sell', name: 'Sell Something', icon: '💰', desc: 'Convert readers to buyers' },
+  { id: 'custom', name: 'Custom Goal', icon: '⚙️', desc: 'Your specific objective' }
 ]
 
 const LENGTHS = [
@@ -58,6 +59,7 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState('')
+  const customGoalInputRef = useRef(null)
   const [formData, setFormData] = useState({
     topic: '',
     audience: '',
@@ -66,7 +68,8 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
     length: '',
     customLength: '',
     keywords: '',
-    currentKeyword: ''
+    currentKeyword: '',
+    customGoal: ''
   })
 
   const totalSteps = 6
@@ -75,6 +78,19 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
   useEffect(() => {
     console.log('Step changed to:', step)
   }, [step])
+
+  // Auto-focus and scroll to custom goal input when custom goal is selected
+  useEffect(() => {
+    if (formData.goals.includes('custom') && customGoalInputRef.current) {
+      setTimeout(() => {
+        customGoalInputRef.current.focus()
+        customGoalInputRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        })
+      }, 100)
+    }
+  }, [formData.goals])
 
   // Handle dialog close - prevent closing during generation
   const handleDialogClose = (open) => {
@@ -117,11 +133,11 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
     
     // Set default values for skipped steps
     if (step === 1 && !formData.topic.trim()) {
-      setFormData(prev => ({ ...prev, topic: 'Content Topic' }))
+      setFormData(prev => ({ ...prev, topic: '' }))
     } else if (step === 2 && !formData.audience.trim()) {
-      setFormData(prev => ({ ...prev, audience: 'General audience' }))
+      setFormData(prev => ({ ...prev, audience: '' }))
     } else if (step === 3 && formData.goals.length === 0) {
-      setFormData(prev => ({ ...prev, goals: ['educate'] }))
+      setFormData(prev => ({ ...prev, goals: ['educate'], customGoal: '' }))
     } else if (step === 4 && !formData.platform) {
       setFormData(prev => ({ ...prev, platform: 'blog' }))
     } else if (step === 5 && !formData.length) {
@@ -155,8 +171,13 @@ export default function ContentWizard({ isOpen, onClose, onGenerate, onBackToIni
     }
 
     if (selectedGoals.length > 0) {
-      const goalNames = selectedGoals.map(g => g.name.toLowerCase()).join(' and ')
-      prompt += `. The goal is to ${goalNames}`
+      const goalDescriptions = selectedGoals.map(g => {
+        if (g.id === 'custom' && formData.customGoal) {
+          return formData.customGoal.toLowerCase()
+        }
+        return g.name.toLowerCase()
+      }).join(' and ')
+      prompt += `. The goal is to ${goalDescriptions}`
     }
 
     if (selectedPlatform) {
@@ -299,7 +320,8 @@ Please provide improved version of the entire document based on the user's reque
       length: '',
       customLength: '',
       keywords: '',
-      currentKeyword: ''
+      currentKeyword: '',
+      customGoal: ''
     })
   }
 
@@ -327,13 +349,11 @@ Please provide improved version of the entire document based on the user's reque
 
   // Handle Enter key to go to next step
   const handleKeyDown = (e) => {
+    // Only prevent default Enter behavior, don't auto-advance or generate
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (step < totalSteps && canProceed()) {
-        handleNext(e)
-      } else if (step === totalSteps) {
-        handleGenerate()
-      }
+      // Don't automatically advance steps or trigger generation
+      // Users must click buttons explicitly
     }
   }
 
@@ -347,8 +367,20 @@ Please provide improved version of the entire document based on the user's reque
       return LENGTHS.filter(l => ['very-short', 'short', 'custom'].includes(l.id))
     } else if (platform === 'instagram') {
       return LENGTHS.filter(l => ['very-short', 'custom'].includes(l.id))
+    } else if (platform === 'blog') {
+      // Blog: up to 2000+ words, no comprehensive option
+      return LENGTHS.filter(l => ['very-short', 'short', 'medium', 'long', 'max', 'custom'].includes(l.id))
+    } else if (platform === 'newsletter') {
+      // Newsletter: max 1200 words (up to Long, no Max 2000+)
+      return LENGTHS.filter(l => ['very-short', 'short', 'medium', 'long', 'custom'].includes(l.id))
+    } else if (platform === 'youtube') {
+      // YouTube: short, long, and max (1200+ words)
+      return LENGTHS.filter(l => ['short', 'long', 'max', 'custom'].includes(l.id))
+    } else if (platform === 'medium') {
+      // Medium: short, long, and max (1200+ words) 
+      return LENGTHS.filter(l => ['short', 'long', 'max', 'custom'].includes(l.id))
     } else {
-      // For blog, newsletter, youtube, medium, custom - show all options
+      // For custom platform - show all options
       return LENGTHS
     }
   }
@@ -491,6 +523,25 @@ Please provide improved version of the entire document based on the user's reque
                 </Card>
               ))}
             </div>
+            {formData.goals.includes('custom') && (
+              <div className="mt-4">
+                <Label htmlFor="customGoal" className="text-black">
+                  What's your specific goal?
+                </Label>
+                <Input
+                  id="customGoal"
+                  placeholder="e.g., Build trust with my audience, Showcase expertise, Generate leads"
+                  value={formData.customGoal}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customGoal: e.target.value }))}
+                  onKeyDown={handleKeyDown}
+                  className="border-blue-200 mt-2 focus:border-blue-500 text-black"
+                  ref={customGoalInputRef}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Describe what you want to achieve with this content
+                </p>
+              </div>
+            )}
           </div>
         )
 
@@ -667,9 +718,14 @@ Please provide improved version of the entire document based on the user's reque
                 Ready to generate!
               </h4>
               <div className="text-sm text-gray-700 space-y-1">
-                <p><strong className="text-black">Topic:</strong> {formData.topic || 'Content Topic'}</p>
-                <p><strong className="text-black">Audience:</strong> {formData.audience || 'General audience'}</p>
-                <p><strong className="text-black">Goals:</strong> {formData.goals.length > 0 ? formData.goals.map(g => GOALS.find(goal => goal.id === g)?.name).join(', ') : 'Educate'}</p>
+                <p><strong className="text-black">Topic:</strong> {formData.topic || ''}</p>
+                <p><strong className="text-black">Audience:</strong> {formData.audience || ''}</p>
+                <p><strong className="text-black">Goals:</strong> {formData.goals.length > 0 ? formData.goals.map(g => {
+                  if (g === 'custom' && formData.customGoal) {
+                    return formData.customGoal
+                  }
+                  return GOALS.find(goal => goal.id === g)?.name
+                }).filter(Boolean).join(', ') : 'Educate'}</p>
                 <p><strong className="text-black">Platform:</strong> {PLATFORMS.find(p => p.id === (formData.platform || 'blog'))?.name || 'Blog Post'}</p>
                 <p><strong className="text-black">Length:</strong> {LENGTHS.find(l => l.id === (formData.length || 'medium'))?.name || 'Medium'}</p>
                 {formData.keywords && <p><strong className="text-black">Keywords:</strong> {formData.keywords}</p>}
@@ -721,9 +777,8 @@ Please provide improved version of the entire document based on the user's reque
           <div className="flex justify-between mt-6 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
               onClick={handleBack}
-              className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+              className="flex items-center gap-2 bg-white shadow-md border-blue-200 text-blue-700 hover:bg-blue-50"
             >
               <ArrowLeft className="w-4 h-4" />
               {step === 1 ? 'Choose Method' : 'Back'}
@@ -733,7 +788,6 @@ Please provide improved version of the entire document based on the user's reque
               {canSkip() && (
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={handleSkip}
                   className="flex items-center gap-2 border-gray-200 text-gray-600 hover:bg-gray-50"
                 >

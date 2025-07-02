@@ -4,8 +4,8 @@
 This application now includes speech-to-text functionality using the Reverie STT service, supporting English and 11 Indian languages with real-time streaming transcription.
 
 ## API Configuration
-- **API Key**: `bd448f71dae9549fa69f377a3b5f190775369fba`
-- **App ID**: `com.ayushman.codefly`
+- **API Key**: `API-KEY`
+- **App ID**: `APP ID`
 
 ## Features Implemented
 
