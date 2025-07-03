@@ -10,10 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { usePathname } from "next/navigation"
+import Image from "next/image"
 
 function ModeToggle() {
   const { setTheme } = useTheme()
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,21 +40,28 @@ function ModeToggle() {
 }
 
 export default function Template({ children }) {
+  const pathname = usePathname()
   return (
-    <div className="h-screen w-screen overflow-x-hidden bg-white">
+    <div className="h-screen w-screen bg-white">
         <div className="fixed left-4 bottom-4">
             {/* <ModeToggle /> */}
         </div>
       {children}
       {/* Fixed Footer */}
+      {(pathname !== "/onboarding" && pathname!== "/dashboard") && (
+        <>
       <div className="py-20 md:py-10 lg:py-0 bg-white"></div>
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 z-40">
+      <footer className="relative bottom-0 left-0 right-0 bg-white border-t border-blue-200 z-40 mt-auto">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                    Likh.AI
-                  </span>
+                  <Image
+                    src="/Likh.png"
+                    alt="Likh.AI"
+                    width={100}
+                    height={30}
+                    className="h-6 w-auto"
+                  />
                 </div>
                 <div className="flex items-center space-x-6 text-sm text-slate-600">
                   <a href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</a>
@@ -67,6 +75,8 @@ export default function Template({ children }) {
               </div>
             </div>
           </footer>
+          </>
+      )}
     </div>
   )
 }

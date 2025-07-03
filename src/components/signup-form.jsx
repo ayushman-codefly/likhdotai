@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { Mail, Lock, Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react"
 import useSession from "@/lib/supabase/use-session"
+import Image from "next/image"
 
 export function SignupForm({ className, ...props }) {
   const [email, setEmail] = useState("")
@@ -96,6 +97,15 @@ export function SignupForm({ className, ...props }) {
   return (
     <div className={cn("w-full border-0 bg-white", className)} {...props}>
       <div className="text-center">
+        <div className="mb-6">
+          <Image
+            src="/Likh.png"
+            alt="Likh.AI"
+            width={150}
+            height={50}
+            className="h-8 w-auto mx-auto"
+          />
+        </div>
         <div className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
           Create account
         </div>

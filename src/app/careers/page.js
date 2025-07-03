@@ -22,6 +22,7 @@ import {
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Link from "next/link"
+import Image from "next/image"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 const CareersPage = () => {
@@ -114,9 +115,13 @@ const CareersPage = () => {
                                     </Button>
                                     <div className="w-px h-6 bg-slate-300" />
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                                            Likh.AI
-                                        </span>
+                                        <Image
+                                            src="/Likh.png"
+                                            alt="Likh.AI"
+                                            width={120}
+                                            height={40}
+                                            className="h-8 w-auto"
+                                        />
                                     </div>
                                 </div>
                                 <div className="hidden md:flex items-center space-x-8">

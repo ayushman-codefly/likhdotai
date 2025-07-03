@@ -36,8 +36,10 @@ import {
   User,
   Wand2,
   Settings,
+  Paperclip,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 // LCS-based HTML-aware diff function
 function createIntelligentDiff(original, modified) {
@@ -271,6 +273,7 @@ export default function Page() {
 
   const chatContainerRef = useRef(null)
   const chatInputRef = useRef(null)
+  const fileInputRef = useRef(null)
   const session = useSession()
   const router = useRouter()
 
@@ -620,6 +623,48 @@ IMPORTANT INSTRUCTIONS:
     }
   }
 
+  // Handle file upload (dummy functionality)
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      // Check if it's PDF or Word document
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword'
+      ]
+      
+      if (allowedTypes.includes(file.type)) {
+        // For now, just show a message that file was received
+        const fileMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `📎 Document uploaded: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+        }
+        setMessages((prev) => [...prev, fileMessage])
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      } else {
+        // Show error for unsupported file types
+        const errorMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "❌ Only PDF and Word documents (.pdf, .doc, .docx) are supported.",
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      }
+    }
+  }
+
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
   const applyChangesToEditor = (messageId, suggestedContent) => {
     setOriginalDocument(document)
     setModifiedDocument(suggestedContent)
@@ -841,14 +886,23 @@ IMPORTANT INSTRUCTIONS:
       <div className="flex-shrink-0 p-4 border-b border-blue-200 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center justify-between max-w-full">
           <div className="flex items-center space-x-3 min-w-0 flex-1">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-bold text-slate-900 truncate">
-                {session?.user?.user_metadata?.fullname || 
-                 session?.user?.user_metadata?.full_name || 
-                 session?.user?.email?.split('@')[0] || 
-                 'Dashboard'}
-              </h1>
-              <p className="text-sm text-slate-600 truncate">Create and manage your documents</p>
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <Image
+                src="/Likh.png"
+                alt="Likh.AI"
+                width={100}
+                height={30}
+                className="h-6 w-auto flex-shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl font-bold text-slate-900 truncate">
+                  {session?.user?.user_metadata?.fullname || 
+                   session?.user?.user_metadata?.full_name || 
+                   session?.user?.email?.split('@')[0] || 
+                   'Dashboard'}
+                </h1>
+                <p className="text-sm text-slate-600 truncate">Create and manage your documents</p>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -890,6 +944,14 @@ IMPORTANT INSTRUCTIONS:
                     </p>
                   </div>
                 </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => router.push('/')} 
+                  className="text-blue-600 focus:text-blue-600"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  <span>Go to Landing Page</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={async () => {
@@ -1054,7 +1116,7 @@ IMPORTANT INSTRUCTIONS:
                       handleSubmit(e)
                     }
                   }}
-                  className={`w-full min-h-[40px] max-h-[120px] p-3 pr-12 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                  className={`w-full min-h-[40px] max-h-[120px] p-3 pr-20 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                   style={{
                     whiteSpace: "pre-wrap",
                     wordWrap: "break-word",
@@ -1068,8 +1130,31 @@ IMPORTANT INSTRUCTIONS:
                   </div>
                 )}
                 
-                {/* Microphone Button - No language selector */}
-                <div className="absolute right-2 top-2">
+                {/* File Upload and Microphone Buttons */}
+                <div className="absolute right-2 top-2 flex gap-1">
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  
+                  {/* File Upload Button */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={triggerFileUpload}
+                    disabled={userCredits <= 0 || isLoading}
+                    className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                    title="Upload PDF or Word document"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+                  
+                  {/* Microphone Button */}
                   <MicrophoneButton
                     onTranscript={handleSttTranscript}
                     disabled={userCredits <= 0 || isLoading}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Send, Bot, User, MoreVertical } from "lucide-react"
+import { Send, Bot, User, MoreVertical, Paperclip } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
@@ -25,6 +25,7 @@ export default function ChatWindow({ documentContent = "", onSuggestion }) {
   const [selectedLanguage, setSelectedLanguage] = useState("en")
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
+  const fileInputRef = useRef(null)
   const session = useSession()
 
   // Auto-scroll to bottom when messages change
@@ -39,6 +40,50 @@ export default function ChatWindow({ documentContent = "", onSuggestion }) {
       if (textareaRef.current) {
         textareaRef.current.value = transcript
       }
+    }
+  }
+
+  // Handle file upload (dummy functionality)
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      // Check if it's PDF or Word document
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword'
+      ]
+      
+      if (allowedTypes.includes(file.type)) {
+        // For now, just show a message that file was received
+        const fileMessage = {
+          id: Date.now().toString(),
+          content: `📎 Document uploaded: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+          role: "assistant",
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, fileMessage])
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      } else {
+        // Show error for unsupported file types
+        const errorMessage = {
+          id: Date.now().toString(),
+          content: "❌ Only PDF and Word documents (.pdf, .doc, .docx) are supported.",
+          role: "assistant",
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      }
+    }
+  }
+
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
     }
   }
 
@@ -284,12 +329,32 @@ Respond with the improved/modified content in clean HTML format.`
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask AI..."
-              className="flex-1 min-h-[60px] max-h-32 resize-none text-black border-blue-200 focus:border-blue-400 focus:ring-blue-400 pr-12 w-full"
+              className="flex-1 min-h-[60px] max-h-32 resize-none text-black border-blue-200 focus:border-blue-400 focus:ring-blue-400 pr-20 w-full"
               disabled={isLoading}
             />
             
-            {/* Microphone Button - No language selector */}
-            <div className="absolute right-2 top-2">
+            {/* File Upload and Microphone Buttons */}
+            <div className="absolute right-2 top-2 flex gap-1">
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              
+              {/* File Upload Button */}
+              <Button
+                onClick={triggerFileUpload}
+                disabled={isLoading}
+                className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 border border-blue-200"
+                title="Upload PDF or Word document"
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+              
+              {/* Microphone Button */}
               <MicrophoneButton
                 onTranscript={handleSttTranscript}
                 disabled={isLoading}
