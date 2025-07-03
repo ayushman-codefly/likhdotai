@@ -9,6 +9,7 @@ const useReverieStt = (apiKey, appId) => {
   const [transcript, setTranscript] = useState('')
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isPartial, setIsPartial] = useState(false)
   
   const reverieClientRef = useRef(null)
   const finalResultRef = useRef('')
@@ -69,12 +70,10 @@ const useReverieStt = (apiKey, appId) => {
         finalResultRef.current = text.trim()
         partialResultRef.current = ""
         
-        // Add to full transcript
-        fullTranscriptRef.current = fullTranscriptRef.current ? 
-          `${fullTranscriptRef.current} ${text.trim()}` : 
-          text.trim()
-        setTranscript(fullTranscriptRef.current)
-        console.log('Updated full transcript:', fullTranscriptRef.current)
+        // For final results, just set the final text (not accumulated)
+        setTranscript(text.trim())
+        setIsPartial(false)
+        console.log('Updated final transcript:', text.trim())
       }
     } else if (sttEvent.event === "PARTIAL_RESULTS") {
       // For partial results, the text is often in the data field
@@ -84,12 +83,10 @@ const useReverieStt = (apiKey, appId) => {
       if (text.trim()) {
         partialResultRef.current = text.trim()
         
-        // Show current full transcript + partial result
-        const currentTranscript = fullTranscriptRef.current ? 
-          `${fullTranscriptRef.current} ${text.trim()}` : 
-          text.trim()
-        setTranscript(currentTranscript)
-        console.log('Updated transcript with partial:', currentTranscript)
+        // For partial results, just show the current partial
+        setTranscript(text.trim())
+        setIsPartial(true)
+        console.log('Updated partial transcript:', text.trim())
       }
     } else if (sttEvent.event === "MSG_WEB_SOCKET") {
       // Handle WebSocket messages that might contain JSON data
@@ -102,16 +99,12 @@ const useReverieStt = (apiKey, appId) => {
           if (wsData.final) {
             finalResultRef.current = text
             partialResultRef.current = ""
-            fullTranscriptRef.current = fullTranscriptRef.current ? 
-              `${fullTranscriptRef.current} ${text}` : 
-              text
-            setTranscript(fullTranscriptRef.current)
+            setTranscript(text)
+            setIsPartial(false)
           } else {
             partialResultRef.current = text
-            const currentTranscript = fullTranscriptRef.current ? 
-              `${fullTranscriptRef.current} ${text}` : 
-              text
-            setTranscript(currentTranscript)
+            setTranscript(text)
+            setIsPartial(true)
           }
         }
       } catch (e) {
@@ -235,6 +228,7 @@ const useReverieStt = (apiKey, appId) => {
   // Clear transcript
   const clearTranscript = useCallback(() => {
     setTranscript('')
+    setIsPartial(false)
     finalResultRef.current = ''
     partialResultRef.current = ''
     fullTranscriptRef.current = ''
@@ -256,6 +250,7 @@ const useReverieStt = (apiKey, appId) => {
     isListening,
     isInitialized,
     transcript,
+    isPartial,
     error,
     isLoading,
     startListening,

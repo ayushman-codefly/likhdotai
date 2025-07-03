@@ -5,41 +5,8 @@ import { Badge } from "@/components/ui/badge"
 
 export default function LoginPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2 bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        {/* Header with Likh.AI branding */}
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white flex size-8 items-center justify-center rounded-lg">
-              <Type className="size-4" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              Likh.AI
-            </span>
-          </a>
-          <Badge className="ml-auto bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
-            <Sparkles className="w-3 h-3 mr-1" />
-            Sign In
-          </Badge>
-        </div>
-
-        {/* Form Container */}
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-sm">
-            <LoginForm />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-slate-500">
-          Secure login powered by{" "}
-          <a href="#" className="text-blue-600 hover:text-blue-700 underline underline-offset-4">
-            Supabase
-          </a>
-        </div>
-      </div>
-
-      {/* Right side with gradient and pattern */}
+    <div className="grid h-screen lg:grid-cols-2 overflow-hidden">
+      {/* Left side with gradient and pattern */}
       <div className="relative hidden lg:block bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-transparent"></div>
@@ -73,6 +40,19 @@ export default function LoginPage() {
             <rect width="100%" height="100%" fill="url(#login-grid)" />
           </svg>
         </div>
+      </div>
+
+      {/* Right side with form */}
+      <div className="flex flex-col overflow-y-auto">
+        {/* Form Container */}
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-md bg-none">
+            <LoginForm />
+          </div>
+        </div>
+
+        {/* Footer */}
+        
       </div>
     </div>
   )

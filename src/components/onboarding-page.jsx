@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { setUserInDB } from "@/app/api/handlers/userHandlers"
 import { useRouter } from "next/navigation"
+import { KeyTestComponent } from "@/app/_reusables/Editor"
 
 export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
   const [name, setName] = useState("")
@@ -34,6 +35,7 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
   const [isCompleted, setIsCompleted] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedUseCases, setSelectedUseCases] = useState([])
+  const [keyTestCompleted, setKeyTestCompleted] = useState(false)
   const router = useRouter()
 
   // Generate avatar URLs from toon_1.png to toon_10.png
@@ -104,7 +106,7 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
   }
 
   const handleNextStep = () => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -238,13 +240,13 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-600">Step {currentStep} of 3</span>
-              <span className="text-sm text-slate-500">{Math.round((currentStep / 3) * 100)}% Complete</span>
+              <span className="text-sm font-medium text-slate-600">Step {currentStep} of 4</span>
+              <span className="text-sm text-slate-500">{Math.round((currentStep / 4) * 100)}% Complete</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2">
               <div
                 className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${(currentStep / 3) * 100}%` }}
+                style={{ width: `${(currentStep / 4) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -382,7 +384,7 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
                     <Type className="w-8 h-8 text-green-600" />
                   </div>
                   <h3 className="text-2xl font-semibold text-slate-900">What will you use Likh.AI for?</h3>
-                  <p className="text-slate-600">Select all that apply to personalize your experience</p>
+                  <p className="text-blue-600">Select all that apply to personalize your experience</p>
                 </div>
 
                 <div className="space-y-4">
@@ -452,18 +454,95 @@ export default function OnboardingPage({ userId, email,checkUserOnboarded }) {
                     Back
                   </Button>
                   <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    size="lg"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={selectedUseCases.length === 0}
+                  >
+                    Continue
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Dictation Key Test */}
+            {currentStep === 4 && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Headphones className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-slate-900">Learn Quick Dictation</h3>
+                  <p className="text-slate-600">Test the keyboard shortcut to dictate text instantly</p>
+                </div>
+
+                {/* Key Test Component */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+                  <KeyTestComponent 
+                    onKeyDetected={(success) => {
+                      if (success) {
+                        setKeyTestCompleted(true)
+                      }
+                    }}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Success Message */}
+                {keyTestCompleted && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <h4 className="text-green-800 font-semibold">Perfect! You've mastered it!</h4>
+                        <p className="text-green-700 text-sm">
+                          You can now use this shortcut anywhere in the editor to start dictating instantly.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h4 className="text-blue-800 font-semibold mb-2">How dictation works:</h4>
+                  <ul className="text-blue-700 text-sm space-y-1">
+                    <li>• Hold the key while speaking to start dictating</li>
+                    <li>• Release the key to stop and insert your text</li>
+                    <li>• Works anywhere in the editor - even between existing text</li>
+                    <li>• Supports 12 languages including English, Hindi, and more</li>
+                  </ul>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="pt-4 flex space-x-4">
+                  <Button
+                    type="button"
+                    onClick={handlePrevStep}
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 px-8 py-4 text-lg rounded-full transition-all duration-300"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Back
+                  </Button>
+                  <Button
                     type="submit"
                     size="lg"
                     className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={selectedUseCases.length === 0 || isSubmitting}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>Setting up your account...</span>
                       </div>
-                    ) : (
+                    ) : keyTestCompleted ? (
                       "Complete Setup"
+                    ) : (
+                      "Skip & Complete Setup"
                     )}
                   </Button>
                 </div>

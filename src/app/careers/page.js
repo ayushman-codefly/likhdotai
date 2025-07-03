@@ -22,6 +22,7 @@ import {
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Link from "next/link"
+import Image from "next/image"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 const CareersPage = () => {
@@ -96,64 +97,6 @@ const CareersPage = () => {
 
     return (
         <>
-            <style>{`
-        /* Default styles for all screen sizes */
-        body {
-          background-color: #f8fafc;
-        }
-
-        main {
-          padding-bottom: 80px; /* Space for fixed footer */
-        }
-
-        /* Scroll-snap styles only for md screens and larger */
-        @media (min-width: 768px) {
-          html {
-            scroll-snap-type: y mandatory;
-            timeline-scope: --section, --main, --site-header;
-          }
-
-          main {
-            view-timeline: --main;
-            padding-bottom: 80px; /* Space for fixed footer */
-          }
-
-          .section {
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            view-timeline: --section;
-            height: 100dvh;
-            min-height: 100vh;
-          }
-
-          .content {
-            overflow: hidden;
-            position: fixed;
-            inset: 0;
-            --contrast: 2;
-            --blur: 0.3rem;
-            animation: blink ease-in-out both;
-            animation-timeline: --section;
-            background: linear-gradient(135deg, #dbeafe 0%, #ffffff 50%, #dbeafe 100%);
-          }
-        }
-
-        @keyframes blink {
-          0%,
-          100% {
-            filter: blur(var(--blur)) contrast(var(--contrast));
-            opacity: 0;
-            visibility: hidden;
-          }
-
-          50% {
-            filter: blur(0) contrast(1);
-            opacity: 1;
-            visibility: visible;
-          }
-        }
-      `}</style>
-
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 min-w-screen">
                 <main>
                     {/* Navigation - Fixed */}
@@ -172,13 +115,17 @@ const CareersPage = () => {
                                     </Button>
                                     <div className="w-px h-6 bg-slate-300" />
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                                            Likh.AI
-                                        </span>
+                                        <Image
+                                            src="/Likh.png"
+                                            alt="Likh.AI"
+                                            width={120}
+                                            height={40}
+                                            className="h-8 w-auto"
+                                        />
                                     </div>
                                 </div>
                                 <div className="hidden md:flex items-center space-x-8">
-                                    <a href="#values" className="text-slate-600 hover:text-slate-900 transition-colors">
+                                    <a href="#culture" className="text-slate-600 hover:text-slate-900 transition-colors">
                                         Culture
                                     </a>
                                     <a href="#future-roles" className="text-slate-600 hover:text-slate-900 transition-colors">
@@ -254,7 +201,7 @@ const CareersPage = () => {
                     </section>
 
                     {/* Section 2: Our Values */}
-                    <section className="section">
+                    <section id="culture" className="section">
                         <div className="content">
                             <div className="min-h-screen bg-white flex items-center">
                                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -292,7 +239,7 @@ const CareersPage = () => {
                     </section>
 
                     {/* Section 3: Future Roles */}
-                    <section className="section">
+                    <section id="future-roles" className="section">
                         <div className="content">
                             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center">
                                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

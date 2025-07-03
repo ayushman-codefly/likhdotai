@@ -8,6 +8,7 @@ import { ArrowLeft, Mail, Phone, Clock, Linkedin, Building, Sparkles, MapPin } f
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 
 const CONTACT_INFO = {
   email: "contact@likh.ai",
@@ -30,7 +31,7 @@ const CONTACT_INFO = {
 const TEAM_INFO = {
   founder: {
     name: "Janajit Bagchi",
-    role: "CEO & Founder",
+    role: "CEO & Co-Founder",
     initials: "JB",
     image: "/janajit.png",
     linkedin: "https://www.linkedin.com/in/janajit-bagchi-20a085174/",
@@ -44,64 +45,6 @@ const ContactPage = () => {
 
   return (
     <>
-      <style>{`
-        /* Default styles for all screen sizes */
-        body {
-          background-color: #f8fafc;
-        }
-
-        main {
-          padding-bottom: 80px; /* Space for fixed footer */
-        }
-
-        /* Scroll-snap styles only for md screens and larger */
-        @media (min-width: 768px) {
-          html {
-            scroll-snap-type: y mandatory;
-            timeline-scope: --section, --main, --site-header;
-          }
-
-          main {
-            view-timeline: --main;
-            padding-bottom: 80px; /* Space for fixed footer */
-          }
-
-          .section {
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            view-timeline: --section;
-            height: 100dvh;
-            min-height: 100vh;
-          }
-
-          .content {
-            overflow: hidden;
-            position: fixed;
-            inset: 0;
-            --contrast: 2;
-            --blur: 0.3rem;
-            animation: blink ease-in-out both;
-            animation-timeline: --section;
-            background: linear-gradient(135deg, #dbeafe 0%, #ffffff 50%, #dbeafe 100%);
-          }
-        }
-
-        @keyframes blink {
-          0%,
-          100% {
-            filter: blur(var(--blur)) contrast(var(--contrast));
-            opacity: 0;
-            visibility: hidden;
-          }
-
-          50% {
-            filter: blur(0) contrast(1);
-            opacity: 1;
-            visibility: visible;
-          }
-        }
-      `}</style>
-
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
         <main>
           {/* Navigation - Fixed */}
@@ -120,9 +63,13 @@ const ContactPage = () => {
                   </Button>
                   <div className="w-px h-6 bg-slate-300" />
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                      Likh.AI
-                    </span>
+                    <Image
+                      src="/Likh.png"
+                      alt="Likh.AI"
+                      width={120}
+                      height={40}
+                      className="h-8 w-auto"
+                    />
                   </div>
                 </div>
                 <div className="hidden md:flex items-center space-x-8">
@@ -273,12 +220,12 @@ const ContactPage = () => {
           </section>
 
         {/* Section 6: Team */}
-        <section className="section">
+        <section id="team" className="section">
             <div className="content">
               <div className="min-h-screen bg-gradient-to-br py-10 from-blue-50 to-blue-100 flex items-center">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                   <div className="text-center mb-6 md:mb-16">
-                    <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300"><Sparkles /> Meet the Founder</Badge>
+                    <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300"><Sparkles /> Meet the Co-Founder</Badge>
                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 md:mb-6">The visionary behind Likh.AI</h2>
                     <p className="text-lg text-slate-600">
                       Building for the people who power India's language industries — one keystroke at a time.
@@ -293,7 +240,7 @@ const ContactPage = () => {
                           <AvatarFallback className="text-white text-3xl font-bold">JB</AvatarFallback>
                         </Avatar>
                         <h3 className="text-2xl font-bold text-slate-900 mb-2">Janajit Bagchi</h3>
-                        <p className="text-blue-600 font-semibold mb-4">CEO & Founder</p>
+                        <p className="text-blue-600 font-semibold mb-4">CEO & Co-Founder</p>
                         <p className="text-slate-600">
                           Passionate about empowering Indian language professionals with cutting-edge AI technology that
                           understands our unique linguistic needs.
@@ -307,7 +254,7 @@ const ContactPage = () => {
           </section>
 
           {/* Section 5: Enterprise Solutions */}
-          <section className="section">
+          <section id="enterprise" className="section">
             <div className="content">
               <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -363,7 +310,7 @@ const ContactPage = () => {
           <section className="section">
             <div className="content">
               <div className="min-h-screen bg-white flex items-center">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-20 md:mb-0">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20">
                   <div className="text-center mt-4 my-4">
                     <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-300">
                       <Sparkles className="w-4 h-4 mr-1" />
@@ -375,12 +322,12 @@ const ContactPage = () => {
                     </p>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
                       {
                         question: "What is Likh.AI?",
                         answer:
-                          "Likh.AI is an AI-powered typing assistant designed specifically for Indian languages, helping professionals type faster and more accurately.",
+                          "Likh.AI is India's first platform for smart typing and intelligent writing, featuring both a Typing Assistant for Windows and a Writing Assistant for content creation.",
                       },
                       {
                         question: "Which languages do you support?",
@@ -390,18 +337,73 @@ const ContactPage = () => {
                       {
                         question: "Is there a free trial?",
                         answer:
-                          "Yes! We offer 3 months completely free, no payment required. After that, it's just ₹5000/year.",
+                          "Yes! Both our Typing Assistant and Writing Assistant offer free tiers. The Typing Assistant includes 3 months free, while the Writing Assistant offers limited free usage.",
                       },
                       {
                         question: "Do you offer enterprise solutions?",
                         answer:
-                          "We provide custom integrations, bulk licensing, and specialized features for organizations.",
+                          "We provide custom integrations, bulk licensing, and specialized features for organizations of all sizes.",
+                      },
+                      {
+                        question: "How does the Typing Assistant work?",
+                        answer:
+                          "Our Typing Assistant uses advanced AI to provide real-time suggestions, autocomplete, and error corrections specifically designed for Indian languages.",
+                      },
+                      {
+                        question: "What is the Writing Assistant?",
+                        answer:
+                          "The Writing Assistant is a smart content generation tool that helps create blog posts, articles, social media content, and more in Indian languages.",
+                      },
+                      {
+                        question: "Can I use it offline?",
+                        answer:
+                          "The Typing Assistant works offline for basic features. However, advanced AI features require internet connectivity for optimal performance.",
+                      },
+                      {
+                        question: "What platforms do you support?",
+                        answer:
+                          "Our Typing Assistant is available for Windows (with other platforms coming soon). The Writing Assistant is available as a web application.",
+                      },
+                      {
+                        question: "How accurate is the AI?",
+                        answer:
+                          "Our AI is specifically trained on Indian languages and contexts, providing high accuracy for regional expressions, cultural references, and linguistic nuances.",
+                      },
+                      {
+                        question: "Can I customize the suggestions?",
+                        answer:
+                          "Yes! Both assistants learn from your writing style and preferences to provide increasingly personalized suggestions over time.",
+                      },
+                      {
+                        question: "What about data privacy?",
+                        answer:
+                          "We prioritize your privacy. Your data is encrypted and never shared with third parties. You can review our privacy policy for complete details.",
+                      },
+                      {
+                        question: "Do you provide customer support?",
+                        answer:
+                          "Yes! We offer email support, WhatsApp assistance, and priority support for enterprise customers with dedicated account managers.",
+                      },
+                      {
+                        question: "How do I get started?",
+                        answer:
+                          "Simply sign up for free on our website. You can immediately start using the Writing Assistant and download the Typing Assistant for Windows.",
+                      },
+                      {
+                        question: "Can I cancel my subscription anytime?",
+                        answer:
+                          "Absolutely! You can cancel your subscription at any time. No long-term commitments or cancellation fees.",
+                      },
+                      {
+                        question: "Do you offer training sessions?",
+                        answer:
+                          "Yes! We provide onboarding sessions and training workshops for teams and enterprises to maximize productivity with our tools.",
                       },
                     ].map((faq, index) => (
-                      <Card key={index} className="border-0 shadow-md bg-gradient-to-r from-blue-50 to-blue-100">
+                      <Card key={index} className="border-0 shadow-md bg-gradient-to-r from-blue-50 to-blue-100 hover:shadow-lg transition-shadow duration-300">
                         <CardContent className="p-6">
-                          <h4 className="text-lg font-bold text-slate-900 mb-2">{faq.question}</h4>
-                          <p className="text-slate-600">{faq.answer}</p>
+                          <h4 className="text-lg font-bold text-slate-900 mb-3">{faq.question}</h4>
+                          <p className="text-slate-600 text-sm leading-relaxed">{faq.answer}</p>
                         </CardContent>
                       </Card>
                     ))}

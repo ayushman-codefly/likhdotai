@@ -5,68 +5,46 @@ import { useRef, useState, useEffect } from "react"
 
 export const features = [
   {
-    title: "Phonetic Typing",
-    header: "Type as You Speak",
+    title: "Smart Typing Wizard",
+    header: "Your AI-Powered Content Assistant",
     description:
-      "Easily type in Hindi, Oriya, or Bangla using familiar English spellings with smart phonetic conversion.",
+      "Experience the future of content creation with our Smart Typing Wizard - an intelligent assistant that learns your writing style and generates content at lightning speed.",
     bullets: [
-      "No need to learn native keyboard layouts",
-      "Converts English input to native script instantly",
-      "Makes typing accessible for all age groups",
+      "Learns your unique writing style and brand voice",
+      "Generates content 5x faster than traditional methods",
+      "Creates platform-ready content for blogs, social media, and more",
+      "Maintains consistency across all your communications",
     ],
-    image: "/images/phonetic.gif",
+    image: "/images/wizard.gif",
+    category: "writing"
   },
   {
-    title: "Inscript Typing",
-    header: "Master Native Layouts",
+    title: "Voice & Brand Learning",
+    header: "Content That Sounds Like You",
     description:
-      "Supports standard Inscript layouts for Hindi, Oriya, and Bangla—perfect for experienced users and formal documentation.",
+      "Upload your existing content or brand guidelines, and our AI learns to write exactly like you or your brand - no more generic, robotic content.",
     bullets: [
-      "Follows government-approved typing standards",
-      "Ideal for professional and official use",
-      "Compatible with existing typing training",
-      "Familiar for certified typists and exam aspirants",
+      "Analyzes your LinkedIn/Twitter posts for style patterns",
+      "Learns from your brand guidelines and past content",
+      "Maintains your unique voice across all platforms",
+      "Adapts to different content types and audiences",
     ],
-    image: "/images/inscript.gif",
+    image: "/images/docupload.gif",
+    category: "writing"
   },
   {
-    title: "Smart Spell Checker",
-    header: "Catch Mistakes Instantly",
+    title: "Multi-Platform Content Generation",
+    header: "One Input, Multiple Outputs",
     description:
-      "Detects and corrects spelling errors in Hindi, Oriya, and Bangla with context-aware suggestions in real-time.",
+      "Generate content for every platform with a single prompt - from professional blogs to engaging social media posts, all optimized for their specific audiences.",
     bullets: [
-      "Real-time correction as you type",
-      "Understands phonetic and script-based errors",
-      "Boosts accuracy in professional content",
-      "Learns from usage to improve suggestions",
-    ],
-    image: "/images/spellcheck.gif",
-  },
-  {
-    title: "Indic Grammar Checker",
-    header: "Write with Confidence",
-    description:
-      "Automatically checks grammar and sentence structure in Indic languages, offering intelligent suggestions for clearer writing.",
-    bullets: [
-      "Flags grammatical errors as you type",
-      "Suggests proper sentence construction",
-      "Supports better language learning",
-      "Enhances the quality of your writing",
-    ],
-    image: "/images/spellcheck.gif",
-  },
-  {
-    title: "Chat Completions",
-    header: "Chat with AI for content creation",
-    description:
-      "Chat with AI for content creation, editing, and more using pre defined wizard or write your own prompt",
-    bullets: [
-      "Context-aware content output",
-      "Avoids stiff, word-for-word results", 
-      "Great for social media or creative use",
-      "Be more productive in content creation",
+      "Blog posts, social media captions, product updates",
+      "Platform-specific optimization (LinkedIn, Twitter, Instagram)",
+      "SEO-friendly content with keyword suggestions",
+      "Built-in image generation for visual content",
     ],
     image: "/images/ai-chat.gif",
+    category: "writing"
   },
   {
     title: "Speech to Text",
@@ -80,7 +58,63 @@ export const features = [
       "High accuracy even in regional accents",
     ],
     image: "/images/stt.gif",
+    category: "typing"
   },
+  {
+    title: "Phonetic Typing",
+    header: "Type as You Speak",
+    description:
+      "Easily type in Hindi, Oriya, or Bangla using familiar English spellings with smart phonetic conversion.",
+    bullets: [
+      "No need to learn native keyboard layouts",
+      "Converts English input to native script instantly",
+      "Makes typing accessible for all age groups",
+    ],
+    image: "/images/phonetic.gif",
+    category: "typing"
+  },
+  {
+    title: "Inscript Typing",
+    header: "Master Native Layouts",
+    description:
+      "Supports standard Inscript layouts for Hindi, Oriya, and Bangla—perfect for experienced users and formal documentation.",
+    bullets: [
+      "Follows government-approved typing standards",
+      "Ideal for professional and official use",
+      "Compatible with existing typing training",
+      "Familiar for certified typists and exam aspirants",
+    ],
+    image: "/images/inscript.gif",
+    category: "typing"
+  },
+  {
+    title: "Smart Spell Checker",
+    header: "Catch Mistakes Instantly",
+    description:
+      "Detects and corrects spelling errors in Hindi, Oriya, and Bangla with context-aware suggestions in real-time.",
+    bullets: [
+      "Real-time correction as you type",
+      "Understands phonetic and script-based errors",
+      "Boosts accuracy in professional content",
+      "Learns from usage to improve suggestions",
+    ],
+    image: "/images/spellcheck.gif",
+    category: "typing"
+  },
+  {
+    title: "Indic Grammar Checker",
+    header: "Write with Confidence",
+    description:
+      "Automatically checks grammar and sentence structure in Indic languages, offering intelligent suggestions for clearer writing.",
+    bullets: [
+      "Flags grammatical errors as you type",
+      "Suggests proper sentence construction",
+      "Supports better language learning",
+      "Enhances the quality of your writing",
+    ],
+    image: "/images/spellcheck.gif",
+    category: "typing"
+  }
 ]
 
 const FeatureSection = () => {
@@ -122,8 +156,8 @@ const FeatureSection = () => {
   }, [])
 
   return (
-    <div id="features" className="relative min-w-screen flex flex-row gap-0">
-                 <style>{`
+    <div id="features" className="relative min-w-screen flex flex-col gap-0">
+      <style>{`
         /* Default styles for all screen sizes */
         #features-image{
             animation: fade-in linear;
@@ -135,87 +169,111 @@ const FeatureSection = () => {
                     to {scale: 1; opacity:1;}
         }
       `}</style>
-      <div className="w-full md:w-1/2">
-        {features.map((feature, index) => (
-          <section
-            key={index}
-            ref={(el) => {
-              sectionRefs.current[index] = el
-            }}
-            className="section w-full"
-          >
-            <div className="content mt-10">
-              <div className="relative w-full mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative text-left flex flex-col gap-4 items-start justify-center pt-20">
-                  <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300">
-                    <Sparkles className="w-4 h-4 mr-1" />
-                    {feature.title}
-                  </Badge>
+      
+      {/* Section Header */}
+      <div className="text-center py-20 bg-gradient-to-br from-blue-50 to-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-slate-100 text-blue-800 border-blue-300">
+            <Sparkles className="w-4 h-4 mr-1" />
+            One Platform, Two Powerful Assistants
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+            Features That Transform How You Create Content
+          </h2>
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+            From precision typing in Indian languages to AI-powered content generation, discover features designed for both professional accuracy and creative scale.
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex flex-row gap-0">
+        <div className="w-full md:w-1/2">
+          {features.map((feature, index) => (
+            <section
+              key={index}
+              ref={(el) => {
+                sectionRefs.current[index] = el
+              }}
+              className={`section w-full ${index === features.length - 1 ? "md:mb-44" : ""}`}
+            >
+              <div className="content mt-10">
+                <div className="relative w-full mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="relative text-left flex flex-col gap-4 items-start justify-center pt-20">
+                    <Badge className={`mb-6 bg-gradient-to-r ${
+                      feature.category === 'writing' 
+                        ? 'from-blue-200 to-slate-200 text-blue-800 border-blue-300' 
+                        : 'from-blue-100 to-blue-200 text-blue-800 border-blue-300'
+                    }`}>
+                      <Sparkles className="w-4 h-4 mr-1" />
+                      {feature.category === 'writing' ? 'Writing Assistant' : 'Typing Assistant'} - {feature.title}
+                    </Badge>
 
-                  <div className="w-full flex flex-col">
-                    <div className="min-w-full p-4 flex flex-col gap-4">
-                      <h3 className="text-2xl sm:text-3xl lg:text-4xl leading-[1.5] font-bold mb-6 transition-all duration-1000 transform">
-                        <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-                          {feature.header}
-                        </span>
-                      </h3>
-                      <p className="text-lg text-slate-600 mb-6">{feature.description}</p>
-                      <div>
-                        <p className="text-lg text-slate-900 font-semibold mb-8">
-                          How it <span className="text-orange-600">helps</span> in typing?
-                        </p>
-                        <div className="space-y-4">
-                          {feature.bullets.map((point, idx) => (
-                            <div key={idx} className="flex items-start space-x-3">
-                              <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
-                              <p className="text-slate-600">{point}</p>
-                            </div>
-                          ))}
+                    <div className="w-full flex flex-col">
+                      <div className="min-w-full p-4 flex flex-col gap-4">
+                        <h3 className="text-2xl sm:text-3xl lg:text-4xl leading-[1.5] font-bold mb-6 transition-all duration-1000 transform">
+                          <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+                            {feature.header}
+                          </span>
+                        </h3>
+                        <p className="text-lg text-slate-600 mb-6">{feature.description}</p>
+                        <div>
+                          <p className="text-lg text-slate-900 font-semibold mb-8">
+                            {feature.category === 'writing' ? (
+                              <>How it transforms your <span className="text-blue-700">content creation</span>:</>
+                            ) : (
+                              <>How it <span className="text-blue-600">helps</span> in typing:</>
+                            )}
+                          </p>
+                          <div className="space-y-4">
+                            {feature.bullets.map((point, idx) => (
+                              <div key={idx} className="flex items-start space-x-3">
+                                <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
+                                <p className="text-slate-600">{point}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
+                        
+                        {feature.category === 'writing' && (
+                          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-slate-50 rounded-lg border border-blue-200">
+                            <p className="text-sm text-blue-800 font-medium">
+                              💡 Pro Tip: Import your existing content or brand guidelines to train the AI on your unique style. 
+                              Available in web app - chat interface for easy content creation, document import on desktop version.
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="w-full visible md:hidden p-4">
-                      <div
-                        className={`rounded-2xl p-8 transition-all duration-700`}
-                      >
-                        <img
-                          src={feature.image || "/vercel.svg"}
-                          className="w-full rounded-lg shadow-lg"
-                          alt={feature.title}
-                        />
+                      <div className="w-full visible md:hidden p-4">
+                        <div
+                          className={`rounded-2xl p-8 transition-all duration-700`}
+                        >
+                          <img
+                            src={feature.image || "/vercel.svg"}
+                            className="w-full rounded-lg shadow-lg"
+                            alt={feature.title}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <div className="sticky top-0 min-h-screen max-h-screen h-screen flex-col items-center justify-center w-1/2 hidden md:flex right-0">
-        <div
-          className={`rounded-2xl p-8 transition-all duration-700 ease-in-out transform`}
-        >
-          <img
-            id="features-image"
-            ref={imageRef}
-            src={features[activeSection]?.image || "/vercel.svg?height=400&width=600"}
-            className="w-full max-w-lg rounded-lg shadow-2xl transition-all duration-500 ease-in-out transform hover:scale-107"
-            alt={features[activeSection]?.title || "Feature image"}
-          />
+            </section>
+          ))}
         </div>
 
-        {/* Progress indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {features.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === activeSection ? "bg-slate-800 w-8" : "bg-slate-300"
-              }`}
+        <div className="sticky top-0 min-h-screen max-h-screen h-screen flex-col items-center justify-center w-1/2 hidden md:flex right-0">
+          <div
+            className={`rounded-2xl p-8 transition-all duration-700 ease-in-out transform`}
+          >
+            <img
+              id="features-image"
+              ref={imageRef}
+              src={features[activeSection]?.image || "/vercel.svg?height=400&width=600"}
+              className="w-full max-w-lg rounded-lg shadow-2xl transition-all duration-500 ease-in-out transform hover:scale-107"
+              alt={features[activeSection]?.title || "Feature image"}
             />
-          ))}
+          </div>
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@ import OnboardingPage from "@/components/onboarding-page"
 import ContentWizard from "@/components/content-wizard"
 import InitialPromptDialog from "@/components/initial-prompt-dialog"
 import MicrophoneButton, { LanguageSelector } from "@/components/MicrophoneButton"
-import { getUserFromDB, getUserCredits } from "@/app/api/handlers/userHandlers"
+import { getUserFromDB, getUserCredits, assignInitialCredits } from "@/app/api/handlers/userHandlers"
 import useSession from "@/lib/supabase/use-session"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 import {
@@ -36,8 +36,10 @@ import {
   User,
   Wand2,
   Settings,
+  Paperclip,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 // LCS-based HTML-aware diff function
 function createIntelligentDiff(original, modified) {
@@ -198,26 +200,24 @@ function createIntelligentDiff(original, modified) {
   
   while (i < changes.length) {
     const current = changes[i]
-    const next = changes[i + 1]
     
-    // Check if this is a modification (remove followed by add of same element type)
     if (current.type === 'removed' && 
-        next && 
-        next.type === 'added' && 
-        current.chunk.type === 'element' && 
-        next.chunk.type === 'element' && 
-        current.chunk.tagName === next.chunk.tagName) {
+        i + 1 < changes.length && 
+        changes[i + 1].type === 'added' &&
+        current.chunk.type === 'element' &&
+        changes[i + 1].chunk.type === 'element' &&
+        current.chunk.tagName === changes[i + 1].chunk.tagName) {
       
+      // This is a modification (remove + add of same element type)
       processedChanges.push({
         id: changeId++,
         type: 'modified',
-        originalContent: current.content,
-        modifiedContent: next.content,
-        originalText: current.textContent,
-        modifiedText: next.textContent,
-        tagName: current.chunk.tagName
+        original: current.content,
+        modified: changes[i + 1].content,
+        textContent: `${current.textContent} → ${changes[i + 1].textContent}`,
+        chunk: current.chunk
       })
-      i += 2 // Skip both current and next
+      i += 2 // Skip both the remove and add
     } else {
       processedChanges.push(current)
       i++
@@ -230,10 +230,10 @@ function createIntelligentDiff(original, modified) {
 // Loading component
 function LoadingSpinner() {
   return (
-    <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <p className="text-sm text-gray-600">Loading your workspace...</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-slate-600">Loading your dashboard...</p>
       </div>
     </div>
   )
@@ -258,6 +258,7 @@ export default function Page() {
   const [userExists, setUserExists] = useState(null) // null = loading, true = exists, false = doesn't exist
   const [userLoading, setUserLoading] = useState(true)
   const [userError, setUserError] = useState(null)
+  const [userInfo, setUserInfo] = useState(null)
 
   // Content wizard states
   const [showInitialDialog, setShowInitialDialog] = useState(false)
@@ -272,6 +273,7 @@ export default function Page() {
 
   const chatContainerRef = useRef(null)
   const chatInputRef = useRef(null)
+  const fileInputRef = useRef(null)
   const session = useSession()
   const router = useRouter()
 
@@ -327,7 +329,16 @@ export default function Page() {
           setUserExists(false)
         } else {
           setUserExists(!!dbUser) // true if user exists, false if null
-          // Also check user credits if user exists
+          
+          // Store user info for header display
+          if (dbUser) {
+            setUserInfo(dbUser)
+          }
+          
+          // Ensure credits are assigned for all users (including OAuth users)
+          await ensureUserCredits()
+          
+          // Check user credits if user exists
           if (dbUser) {
             checkUserCredits()
           }
@@ -338,6 +349,15 @@ export default function Page() {
         setUserExists(false)
       } finally {
         setUserLoading(false)
+      }
+    }
+
+    async function ensureUserCredits() {
+      try {
+        // Assign initial credits if they don't exist (works for both regular and OAuth users)
+        await assignInitialCredits(session.user.id)
+      } catch (error) {
+        console.error("Error ensuring user credits:", error)
       }
     }
 
@@ -370,6 +390,7 @@ export default function Page() {
   // Function to recheck user after onboarding completion
   const checkUserOnboarded = async () => {
     setUserLoading(true)
+    setCreditsLoading(true) // Also set credits loading
     try {
       const result = await getUserFromDB(session.user.id)
       
@@ -398,11 +419,25 @@ export default function Page() {
       
       if (!error && dbUser) {
         setUserExists(true)
+        setUserInfo(dbUser)
+        
+        // Refresh credits after onboarding
+        try {
+          const creditsResult = await getUserCredits(session.user.id)
+          if (!creditsResult.error) {
+            setUserCredits(creditsResult.credits)
+          } else {
+            console.error("Error fetching credits after onboarding:", creditsResult.error)
+          }
+        } catch (creditsError) {
+          console.error("Error checking credits after onboarding:", creditsError)
+        }
       }
     } catch (err) {
       console.error("Error rechecking user:", err)
     } finally {
       setUserLoading(false)
+      setCreditsLoading(false)
     }
   }
 
@@ -588,6 +623,48 @@ IMPORTANT INSTRUCTIONS:
     }
   }
 
+  // Handle file upload (dummy functionality)
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      // Check if it's PDF or Word document
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword'
+      ]
+      
+      if (allowedTypes.includes(file.type)) {
+        // For now, just show a message that file was received
+        const fileMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `📎 Document uploaded: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+        }
+        setMessages((prev) => [...prev, fileMessage])
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      } else {
+        // Show error for unsupported file types
+        const errorMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "❌ Only PDF and Word documents (.pdf, .doc, .docx) are supported.",
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      }
+    }
+  }
+
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
   const applyChangesToEditor = (messageId, suggestedContent) => {
     setOriginalDocument(document)
     setModifiedDocument(suggestedContent)
@@ -610,7 +687,7 @@ IMPORTANT INSTRUCTIONS:
       if (change.type === "unchanged") {
         finalDocument += change.content
       } else if (change.type === "added" || change.type === "modified") {
-        finalDocument += change.type === "modified" ? change.modifiedContent : change.content
+        finalDocument += change.type === "modified" ? change.modified : change.content
       }
       // Skip removed changes (don't add them to final document)
     })
@@ -649,9 +726,9 @@ IMPORTANT INSTRUCTIONS:
       } else if (change.type === "modified") {
         // Use modified content if accepted, original if rejected/not decided
         if (acceptedChanges.has(change.id)) {
-          finalDocument += change.modifiedContent
+          finalDocument += change.modified
         } else {
-          finalDocument += change.originalContent
+          finalDocument += change.original
         }
       }
     })
@@ -809,37 +886,91 @@ IMPORTANT INSTRUCTIONS:
       <div className="flex-shrink-0 p-4 border-b border-blue-200 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center justify-between max-w-full">
           <div className="flex items-center space-x-3 min-w-0 flex-1">
-            <Avatar className="h-10 w-10 bg-blue-100 flex-shrink-0">
-              <AvatarImage 
-                src={session?.user?.user_metadata?.image || session?.user?.user_metadata?.avatar_url || session?.user?.user_metadata?.picture} 
-                alt={session?.user?.user_metadata?.fullname || session?.user?.user_metadata?.full_name || session?.user?.email} 
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <Image
+                src="/Likh.png"
+                alt="Likh.AI"
+                width={100}
+                height={30}
+                className="h-6 w-auto flex-shrink-0"
               />
-              <AvatarFallback className="text-blue-600">
-                {session?.user?.user_metadata?.fullname?.charAt(0)?.toUpperCase() || 
-                 session?.user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 
-                 session?.user?.email?.charAt(0)?.toUpperCase() || 
-                 "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-bold text-slate-900 truncate">
-                {session?.user?.user_metadata?.fullname || 
-                 session?.user?.user_metadata?.full_name || 
-                 session?.user?.email?.split('@')[0] || 
-                 'Dashboard'}
-              </h1>
-              <p className="text-sm text-slate-600 truncate">Create and manage your documents</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl font-bold text-slate-900 truncate">
+                  {session?.user?.user_metadata?.fullname || 
+                   session?.user?.user_metadata?.full_name || 
+                   session?.user?.email?.split('@')[0] || 
+                   'Dashboard'}
+                </h1>
+                <p className="text-sm text-slate-600 truncate">Create and manage your documents</p>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              onClick={() => router.push('/settings')}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              size="sm"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage 
+                      src={userInfo?.image || session?.user?.user_metadata?.image || session?.user?.user_metadata?.avatar_url || session?.user?.user_metadata?.picture} 
+                      alt={userInfo?.fullname || session?.user?.user_metadata?.fullname || session?.user?.user_metadata?.full_name || session?.user?.email} 
+                    />
+                    <AvatarFallback className="bg-blue-600 text-white">
+                      {(() => {
+                        const name = userInfo?.fullname || 
+                                   session?.user?.user_metadata?.fullname || 
+                                   session?.user?.user_metadata?.full_name || 
+                                   session?.user?.email?.split('@')[0] || 
+                                   "User";
+                        const nameParts = name.split(' ').filter(part => part.length > 0);
+                        if (nameParts.length >= 2) {
+                          return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
+                        } else {
+                          return nameParts[0]?.charAt(0)?.toUpperCase() || "U";
+                        }
+                      })()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium text-sm truncate">
+                      {userInfo?.fullname || 
+                       session?.user?.user_metadata?.fullname || 
+                       session?.user?.user_metadata?.full_name || 
+                       session?.user?.email?.split('@')[0] || 
+                       "User"}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => router.push('/')} 
+                  className="text-blue-600 focus:text-blue-600"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  <span>Go to Landing Page</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    try {
+                      const supabase = createSupabaseBrowserClient()
+                      await supabase.auth.signOut()
+                      router.push('/')
+                    } catch (error) {
+                      console.error('Error signing out:', error)
+                      router.push('/')
+                    }
+                  }}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -985,7 +1116,7 @@ IMPORTANT INSTRUCTIONS:
                       handleSubmit(e)
                     }
                   }}
-                  className={`w-full min-h-[40px] max-h-[120px] p-3 pr-12 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                  className={`w-full min-h-[40px] max-h-[120px] p-3 pr-20 border border-blue-200 rounded-md text-sm focus-visible:outline-none ring-2 ring-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500 overflow-y-auto resize-none text-black ${userCredits <= 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                   style={{
                     whiteSpace: "pre-wrap",
                     wordWrap: "break-word",
@@ -999,8 +1130,31 @@ IMPORTANT INSTRUCTIONS:
                   </div>
                 )}
                 
-                {/* Microphone Button - No language selector */}
-                <div className="absolute right-2 top-2">
+                {/* File Upload and Microphone Buttons */}
+                <div className="absolute right-2 top-2 flex gap-1">
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  
+                  {/* File Upload Button */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={triggerFileUpload}
+                    disabled={userCredits <= 0 || isLoading}
+                    className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                    title="Upload PDF or Word document"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+                  
+                  {/* Microphone Button */}
                   <MicrophoneButton
                     onTranscript={handleSttTranscript}
                     disabled={userCredits <= 0 || isLoading}
@@ -1026,10 +1180,9 @@ IMPORTANT INSTRUCTIONS:
             <div className="flex flex-wrap gap-1 mt-2 overflow-hidden">
               <Button
                 size="sm"
-                variant="outline"
                 onClick={() => setShowContentWizard(true)}
                 disabled={isLoading || userCredits <= 0}
-                className="border-purple-200 text-purple-700 hover:bg-purple-50 text-xs px-2 flex-shrink-0"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-700 text-xs px-2 flex-shrink-0"
               >
                 <Wand2 className="w-3 h-3 mr-1" />
                 Wizard
@@ -1114,7 +1267,7 @@ IMPORTANT INSTRUCTIONS:
                   }
                   
                   if (change.type === "modified") {
-  return (
+                    return (
                       <div key={change.id} className={`p-3 rounded border ${
                         isAccepted ? "bg-green-50 border-green-200" : 
                         isRejected ? "bg-red-50 border-red-200" : 
@@ -1151,14 +1304,14 @@ IMPORTANT INSTRUCTIONS:
                             <div className="text-xs text-red-600 font-medium mb-1">Original:</div>
                             <div 
                               className="text-sm text-red-800"
-                              dangerouslySetInnerHTML={{ __html: change.originalContent }}
+                              dangerouslySetInnerHTML={{ __html: change.original }}
                             />
                           </div>
                           <div className="p-2 bg-green-100 rounded border-l-4 border-green-400">
                             <div className="text-xs text-green-600 font-medium mb-1">Modified:</div>
                             <div 
                               className="text-sm text-green-800"
-                              dangerouslySetInnerHTML={{ __html: change.modifiedContent }}
+                              dangerouslySetInnerHTML={{ __html: change.modified }}
                             />
                           </div>
                         </div>
@@ -1252,8 +1405,8 @@ IMPORTANT INSTRUCTIONS:
                     <Check className="w-4 h-4 mr-1" />
                     Accept All
                   </Button>
+                </div>
               </div>
-            </div>
             </div>
           </div>
         </div>

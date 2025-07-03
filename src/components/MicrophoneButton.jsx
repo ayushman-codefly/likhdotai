@@ -86,8 +86,8 @@ export function LanguageSelector({ selectedLanguage, onLanguageChange, disabled 
 const MicrophoneButton = ({ 
   onTranscript, 
   disabled = false, 
-  apiKey = 'bd448f71dae9549fa69f377a3b5f190775369fba', 
-  appId = 'com.ayushman.codefly',
+  apiKey = process.env.NEXT_PUBLIC_REVERIE_API_KEY, 
+  appId = process.env.NEXT_PUBLIC_REVERIE_APP_ID,
   language = 'en',
   className = '',
   showLanguageSelector = true,

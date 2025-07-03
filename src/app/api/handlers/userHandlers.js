@@ -45,7 +45,7 @@ export async function getUserCredits(id){
         
         if(user.data.length === 0){
             return {
-                credits: 30,
+                credits: 100, // Updated to 100 for new users
                 error: null
             };
         }
@@ -56,7 +56,7 @@ export async function getUserCredits(id){
         // Check if credits are for current month/year
         if (user.data[0].chat_credits.month !== currentMonth || user.data[0].chat_credits.year !== currentYear) {
             return {
-                credits: 30, // Reset to 30 for new month
+                credits: 100, // Reset to 100 for new month
                 error: null
             };
         }
@@ -75,11 +75,68 @@ export async function getUserCredits(id){
     }
 }
 
+export async function assignInitialCredits(userId) {
+    try {
+        // Check if credits already exist for this user
+        const existingCredits = await sql
+            .from('credits')
+            .select('*')
+            .eq('user_id', userId)
+        
+        // If credits already exist, don't do anything
+        if (existingCredits.data.length > 0) {
+            console.log(`Credits already exist for user ${userId}, skipping assignment`);
+            return {
+                success: true,
+                message: "Credits already exist",
+                error: null
+            };
+        }
+        
+        // Create initial credits for the user
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        const creditData = {
+            user_id: userId,
+            chat_credits: {
+                credits: 100,
+                month: currentMonth,
+                year: currentYear
+            }
+        };
+        
+        const result = await sql
+            .from('credits')
+            .insert(creditData);
+        
+        console.log(`Successfully assigned 100 initial credits to user ${userId}`);
+        
+        return {
+            success: true,
+            message: "Initial credits assigned successfully",
+            error: null
+        };
+    }
+    catch(err) {
+        console.log("Error assigning initial credits:", err);
+        return {
+            success: false,
+            message: "Failed to assign initial credits",
+            error: err
+        };
+    }
+}
+
 export async function setUserInDB({email, id:uuid, image, fullname,usecase}){
     try{
         email = encrypt(email);
         fullname = encrypt(fullname);
         const user = await sql.from("users").insert({email,uuid,usecase,fullname,image})
+        
+        // Automatically assign initial credits to new user
+        await assignInitialCredits(uuid);
+        
         return {
             dbUser: user,
             error: null

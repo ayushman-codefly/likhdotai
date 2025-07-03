@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { Mail, Lock, Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react"
 import useSession from "@/lib/supabase/use-session"
+import Image from "next/image"
 
 export function SignupForm({ className, ...props }) {
   const [email, setEmail] = useState("")
@@ -87,24 +88,6 @@ export function SignupForm({ className, ...props }) {
     }
   }
 
-  const handleFacebookLogin = async () => {
-    setIsLoading(true)
-    setError("")
-    try {
-      await supabase.auth.signInWithOAuth({
-        provider: "facebook",
-        options: {
-          redirectTo: `${location.origin}/dashboard`,
-          captchaToken,
-        },
-      })
-    } catch (err) {
-      setError("Failed to sign in with Facebook")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   useEffect(()=>{
     if(user){
       router.push('/dashboard')
@@ -112,18 +95,23 @@ export function SignupForm({ className, ...props }) {
   },[user]);
 
   return (
-    <Card className={cn("w-full border-0 shadow-lg bg-white", className)} {...props}>
-      <CardHeader className="text-center pb-4">
-        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-          <UserPlus className="h-6 w-6 text-white" />
+    <div className={cn("w-full border-0 bg-white", className)} {...props}>
+      <div className="text-center">
+        <div className="mb-6">
+          <Image
+            src="/Likh.png"
+            alt="Likh.AI"
+            width={150}
+            height={50}
+            className="h-8 w-auto mx-auto"
+          />
         </div>
-        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+        <div className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
           Create account
-        </CardTitle>
-        <CardDescription className="text-slate-600">Enter your details to get started</CardDescription>
-      </CardHeader>
+        </div>
+      </div>
 
-      <CardContent className="px-6 pb-6">
+      <div className="px-6 pb-6">
         <form onSubmit={handleEmailPassLogin} className="space-y-4">
           {/* Error Message */}
           {error && (
@@ -237,41 +225,34 @@ export function SignupForm({ className, ...props }) {
             <span className="bg-white text-slate-500 relative z-10 px-4">Or continue with</span>
           </div>
 
-          {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="border-slate-200 hover:bg-slate-50 hover:border-blue-300 py-3 rounded-full transition-all duration-300"
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5">
-                <path
-                  d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                  fill="#000000"
-                />
-              </svg>
-              <span className="sr-only">Login with Google</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="border-slate-200 hover:bg-slate-50 hover:border-blue-300 py-3 rounded-full transition-all duration-300"
-              onClick={handleFacebookLogin}
-              disabled={isLoading}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5">
-                <path
-                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                  fill="#000000"
-                />
-              </svg>
-              <span className="sr-only">Login with Facebook</span>
-            </Button>
-          </div>
+          {/* Google Login Button - Full Width */}
+          <Button
+            type="button"
+            size="lg"
+            className="w-full border-2 border-blue-200 bg-blue-50 hover:border-blue-300 hover:bg-blue-200 py-3 rounded-full transition-all duration-300 flex items-center justify-center space-x-3"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5">
+              <path
+                d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.26 14.2c-.32-.96-.5-1.98-.5-3.04s.18-2.08.5-3.04V5.68H2.18C1.43 7.51 1 9.22 1 12s.43 4.49 1.18 6.32L5.26 14.2z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12.48 4.84c1.47 0 2.78.63 3.82 1.66l2.86-2.86C17.25 1.54 15.01 0 12.48 0 7.69 0 3.67 2.95 2.18 7.16l3.08 2.4c.73-2.19 2.77-3.72 5.22-3.72z"
+                fill="#EA4335"
+              />
+            </svg>
+            <span className="text-slate-700 font-medium">Continue with Google</span>
+          </Button>
 
           {/* Login Link */}
           <div className="text-center text-sm text-slate-600">
@@ -283,8 +264,18 @@ export function SignupForm({ className, ...props }) {
               Sign in
             </a>
           </div>
+          <div className="text-center text-sm text-slate-500 pt-4">
+          By signing up, you agree to our{" "}
+          <a href="/eula" className="text-blue-600 hover:text-blue-700 underline underline-offset-4">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline underline-offset-4">
+            Privacy Policy
+          </a>
+        </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
